@@ -12,12 +12,21 @@ import sys
 import tarfile
 import argparse
 import matplotlib.pyplot as plt
+import torch
+import ross
 
 from urllib.request import urlretrieve
 from tqdm import tqdm
 
 home = os.path.expanduser("~")
 data_path = home + "/research/data/images/Cubism"
+
+def load_ross(imsize=128, batch_size=1024, verbose=True):
+
+    if not os.path.exists(ross.final_dir):
+        ross.download_ross_data(verbose=verbose)
+    data = load_data(ross.final_dir, verbose=True, imsize=imsize)
+    return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
 
 def load_data(data_dir=data_path, verbose=False, imsize=128):
 
@@ -57,7 +66,5 @@ if __name__ == "__main__":
             imsize = int(args.size)
         except ValueError:
             sys.stderr.write('Image size must be an integer.\n')
-
-
-    images = load_data(verbose=True)
-    print("Data set shape:", images.shape)
+    print('Testing ross data set')
+    print(load_ross())
