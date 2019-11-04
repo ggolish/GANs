@@ -36,13 +36,12 @@ def load_data(data_dir=data_path, verbose=False, imsize=128):
     files = [f for f in os.listdir(data_dir) if f.endswith(".png") or f.endswith(".jpg")]
     images = []
     for f in tqdm(files):
-        if f.endswith(".png") or f.endswith(".jpg"):
-            path = os.path.join(data_dir, f)
-            img = imageio.imread(path)
-            img = cv2.imread(path)
-            img = cv2.resize(img, dsize=(imsize, imsize), interpolation=cv2.INTER_CUBIC)
-            images.append(img)
-            images.append(np.flip(img, 1))
+        path = os.path.join(data_dir, f)
+        img = imageio.imread(path)
+        img = cv2.imread(path)
+        img = cv2.resize(img, dsize=(imsize, imsize), interpolation=cv2.INTER_CUBIC)
+        images.append(img)
+        images.append(np.flip(img, 1))
 
     if verbose:
         print("Done.")
