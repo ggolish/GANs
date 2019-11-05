@@ -21,12 +21,14 @@ from tqdm import tqdm
 home = os.path.expanduser("~")
 data_path = home + "/research/data/images/Cubism"
 
+
 def load_ross(imsize=128, batch_size=1024, verbose=True):
 
     if not os.path.exists(ross.final_dir):
-        ross.download_ross_data(verbose=verbose)
+        ross.download()
     data = load_data(ross.final_dir, verbose=True, imsize=imsize)
     return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
+
 
 def load_data(data_dir=data_path, verbose=False, imsize=128):
 
@@ -48,6 +50,7 @@ def load_data(data_dir=data_path, verbose=False, imsize=128):
 
     return np.array(images, dtype="float32")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="image-loader", description="Utility for loading images")
     parser.add_argument("-d", "--directory", help="Set the data directory.")
@@ -58,7 +61,7 @@ if __name__ == "__main__":
         if not os.path.exists(args.directory):
             sys.stderr.write('Specify a valid directory.\n')
         else:
-            data_dir = args.directory
+            data_path = args.directory
 
     if args.size:
         try:
