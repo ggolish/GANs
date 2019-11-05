@@ -125,3 +125,6 @@ dmypy.json
 .pyre/
 
 
+# Other important stuff
+.idea
+
