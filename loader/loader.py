@@ -14,6 +14,7 @@ import argparse
 import matplotlib.pyplot as plt
 import torch
 import ross
+import img_utils
 
 from urllib.request import urlretrieve
 from tqdm import tqdm
@@ -22,15 +23,18 @@ home = os.path.expanduser("~")
 data_path = home + "/research/data/images/Cubism"
 
 
-def load_ross(imsize=128, batch_size=1024, verbose=True):
+def load_ross(imsize=256, batch_size=1024, verbose=True):
 
     if not os.path.exists(ross.final_dir):
         ross.download()
     data = load_data(ross.final_dir, verbose=True, imsize=imsize)
+    data /= 255.0
+    return data
+    plt.imshow(image)
     return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
 
 
-def load_data(data_dir=data_path, verbose=False, imsize=128):
+def load_data(data_dir=data_path, optimize=True, verbose=False, imsize=256):
 
     if verbose:
         print("Reading image data set...")
@@ -39,11 +43,19 @@ def load_data(data_dir=data_path, verbose=False, imsize=128):
     images = []
     for f in tqdm(files):
         path = os.path.join(data_dir, f)
-        img = imageio.imread(path)
-        img = cv2.imread(path)
-        img = cv2.resize(img, dsize=(imsize, imsize), interpolation=cv2.INTER_CUBIC)
+        original = cv2.imread(path)
+        img = cv2.resize(original, dsize=(imsize, imsize), interpolation=cv2.INTER_CUBIC)
         images.append(img)
-        images.append(np.flip(img, 1))
+        if optimize:
+            images.append(np.flip(img, 1))
+            tmp = list()
+            tmp.append(img_utils.crop(original, imsize))
+            tmp.append(img_utils.northwest(original, imsize))
+            tmp.append(img_utils.southwest(original, imsize))
+            tmp.append(img_utils.southeast(original, imsize))
+            tmp.append(img_utils.northeast(original, imsize))
+            images += tmp
+            images += [np.flip(x, 1) for x in tmp]
 
     if verbose:
         print("Done.")
