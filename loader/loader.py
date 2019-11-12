@@ -29,8 +29,6 @@ def load_ross(imsize=256, batch_size=1024, verbose=True):
         ross.download()
     data = load_data(ross.final_dir, verbose=True, imsize=imsize)
     data /= 255.0
-    return data
-    plt.imshow(image)
     return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
 
 
