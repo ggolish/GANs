@@ -52,22 +52,26 @@ def load_data(data_dir=data_path, optimize=True, verbose=False, imsize=256):
         print("Reading image data set...")
 
     files = [f for f in os.listdir(data_dir) if f.endswith(".png") or f.endswith(".jpg")]
-    images = []
-    for f in tqdm(files):
+    images = list()
+    for f in tqdm(files[:6]):
         path = os.path.join(data_dir, f)
         original = cv2.imread(path)
         img = cv2.resize(original, dsize=(imsize, imsize), interpolation=cv2.INTER_CUBIC)
+        print(type(original))
         images.append(img)
         if optimize:
-            images.append(np.flip(img, 1))
-            tmp = list()
-            tmp.append(img_utils.crop(original, imsize))
-            tmp.append(img_utils.northwest(original, imsize))
-            tmp.append(img_utils.southwest(original, imsize))
-            tmp.append(img_utils.southeast(original, imsize))
-            tmp.append(img_utils.northeast(original, imsize))
-            images += tmp
-            images += [np.flip(x, 1) for x in tmp]
+            # images.append(np.flip(img, 1))
+            # tmp = list()
+            # tmp.append(img_utils.crop(original, imsize))
+            # tmp.append(img_utils.northwest(original, imsize))
+
+            images.append(img_utils.northwest(original, imsize))
+            # images.append(img)
+            # tmp.append(img_utils.southwest(original, imsize))
+            # tmp.append(img_utils.southeast(original, imsize))
+            # tmp.append(img_utils.northeast(original, imsize))
+            # images += tmp
+            # images += [np.flip(x, 1) for x in tmp]
 
     if verbose:
         print("Done.")
