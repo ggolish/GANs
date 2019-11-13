@@ -1,6 +1,6 @@
-
+#!/usr/bin/env python3
 import pytorch
-import architecture as arch
+import architecture
 
 from pytorch.nn import Module
 
@@ -17,10 +17,9 @@ class Critic(Module):
 
 class Generator(Module):
 
-    def __init__(self, arch)
+    def __init__(self, arch):
         super().__init__()
         self.arch = arch
 
     def forward(self, x):
         return self.arch.forward(x)
-
