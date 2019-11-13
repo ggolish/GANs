@@ -14,6 +14,7 @@ import argparse
 import matplotlib.pyplot as plt
 import torch
 import ross
+import cubism
 import img_utils
 
 from urllib.request import urlretrieve
@@ -23,13 +24,26 @@ home = os.path.expanduser("~")
 data_path = home + "/research/data/images/Cubism"
 
 
-def load_ross(imsize=256, batch_size=1024, verbose=True):
-
+def load_ross(imsize=256, batch_size=128, verbose=True):
     if not os.path.exists(ross.final_dir):
         ross.download()
     data = load_data(ross.final_dir, verbose=True, imsize=imsize)
     data /= 255.0
+    # For the gan things
+    # data = (data / 127.5) - 1
     return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
+
+
+def load_cubism(imsize=256, batch_size=128, verbose=True):
+    if not os.path.exists(ross.final_dir):
+        ross.download()
+    data = load_data(ross.final_dir, verbose=True, imsize=imsize)
+    data /= 255.0
+    # For the gan things
+    # data = (data / 127.5) - 1
+    return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
+
+
 
 
 def load_data(data_dir=data_path, optimize=True, verbose=False, imsize=256):
