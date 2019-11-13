@@ -60,18 +60,11 @@ def load_data(data_dir=data_path, optimize=True, verbose=False, imsize=256):
         print(type(original))
         images.append(img)
         if optimize:
-            # images.append(np.flip(img, 1))
-            # tmp = list()
-            # tmp.append(img_utils.crop(original, imsize))
-            # tmp.append(img_utils.northwest(original, imsize))
-
+            images.append(np.flip(img, 1))
             images.append(img_utils.northwest(original, imsize))
-            # images.append(img)
-            # tmp.append(img_utils.southwest(original, imsize))
-            # tmp.append(img_utils.southeast(original, imsize))
-            # tmp.append(img_utils.northeast(original, imsize))
-            # images += tmp
-            # images += [np.flip(x, 1) for x in tmp]
+            images.append(img_utils.southwest(original, imsize))
+            images.append(img_utils.southeast(original, imsize))
+            images.append(img_utils.northeast(original, imsize))
 
     if verbose:
         print("Done.")

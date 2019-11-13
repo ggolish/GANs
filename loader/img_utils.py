@@ -20,17 +20,21 @@ def northwest(img, size):
 
 def southwest(img: np.array, size):
     y, x, z = img.shape
-    return img[-size:, :size, :]
+    img = img[-(y*2)//3:, :(x*2)//3, :]
+    return cv2.resize(img, dsize=(size, size), interpolation=cv2.INTER_CUBIC)
 
 
 def southeast(img: np.array, size):
     y, x, z = img.shape
-    return img[-size:, -size:, :]
+    img = img[-(y*2)//3:, -(x*2)//3:, :]
+    return cv2.resize(img, dsize=(size, size), interpolation=cv2.INTER_CUBIC)
 
 
 def northeast(img: np.array, size):
     y, x, z = img.shape
-    return img[:size, -size:, :]
+    img = img[:(y*2)//3, -(x*2)//3:, :]
+    return cv2.resize(img, dsize=(size, size), interpolation=cv2.INTER_CUBIC)
+
 
 if __name__ == '__main__':
     import os
