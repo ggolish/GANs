@@ -4,20 +4,15 @@
     Module for loading an image data set as a numpy array
 """
 
-import imageio
 import cv2
 import numpy as np
 import os
 import sys
-import tarfile
 import argparse
-import matplotlib.pyplot as plt
 import torch
 import ross
 import cubism
 import img_utils
-
-from urllib.request import urlretrieve
 from tqdm import tqdm
 
 home = os.path.expanduser("~")
@@ -31,19 +26,24 @@ def load_ross(imsize=256, batch_size=128, verbose=True):
     data /= 255.0
     # For the gan things
     # data = (data / 127.5) - 1
-    return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
+    # return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
+    return create_loader(data, batch_size)
 
 
 def load_cubism(imsize=256, batch_size=128, verbose=True):
-    if not os.path.exists(ross.final_dir):
-        ross.download()
-    data = load_data(ross.final_dir, verbose=True, imsize=imsize)
+    if not os.path.exists(cubism.final_dir):
+        cubism.download()
+    data = load_data(cubism.final_dir, verbose=True, imsize=imsize)
     data /= 255.0
     # For the gan things
     # data = (data / 127.5) - 1
-    return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
+    # return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
+    return create_loader(data, batch_size)
 
 
+def create_loader(data, batch_size=128):
+    return torch.utils.data.DataLoader(
+        data, batch_size=batch_size, shuffle=True)
 
 
 def load_data(data_dir=data_path, optimize=True, verbose=False, imsize=256):

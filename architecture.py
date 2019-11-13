@@ -36,7 +36,7 @@ class ResNet(Architecture):
 
 
 # Simple multilayer perceptron architecture for comparsion purposes
-class MLP(Architecture):
+class MLPerceptron(Architecture):
 
     def __init__(self, iscritic=True):
         super().__init__(iscritic)
