@@ -10,8 +10,6 @@ import os
 import sys
 import argparse
 import torch
-import ross
-import cubism
 import img_utils
 from tqdm import tqdm
 
@@ -47,6 +45,8 @@ def load_data(data_dir=data_path, optimize=True, verbose=False, imsize=256):
 
 
 if __name__ == "__main__":
+    import ross
+    import cubism
     parser = argparse.ArgumentParser(prog="image-loader", description="Utility for loading images")
     parser.add_argument("-s", "--size", help="Set the size of the images.")
     args = parser.parse_args(sys.argv[1:])
@@ -55,6 +55,6 @@ if __name__ == "__main__":
             imsize = int(args.size)
         except ValueError:
             sys.stderr.write('Image size must be an integer.\n')
-
+   
     print('Testing ross data set')
     print(ross.load())

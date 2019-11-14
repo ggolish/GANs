@@ -4,7 +4,7 @@
     Module for loading the Cubism data set
 """
 import downloader
-from loader.loader import load_data, create_loader
+from loader import load_data, create_loader
 import os
 
 ds = 'cubism'

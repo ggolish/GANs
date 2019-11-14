@@ -5,7 +5,7 @@
 
 import downloader
 import os
-from loader.loader import load_data, create_loader
+from loader import load_data, create_loader
 
 ds = 'ross-data-resized'
 data_url = f'http://cs.indstate.edu/~ggolish/data/{ds}.tar.gz'
