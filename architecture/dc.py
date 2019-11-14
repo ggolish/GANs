@@ -4,38 +4,57 @@
     The architectures are specific to the data being used in our experiments.
 '''
 
-def arch(x, isCritic):
+from torch import nn
+
+def arch(isCritic, nc, nf, nz=100):
+    """
+        isCritic: 
+        nc : number of channels
+        nf : number of features
+        nz : optional size of latent vector
+    """
     if isCritic:
-        pass
+         return nn.Sequential(
+            # input is (nc) x 64 x 64
+            nn.Conv2d(nc, nf, 4, 2, 1, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (nf) x 32 x 32
+            nn.Conv2d(nf, nf * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(nf * 2),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (nf*2) x 16 x 16
+            nn.Conv2d(nf * 2, nf * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(nf * 4),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (nf*4) x 8 x 8
+            nn.Conv2d(nf * 4, nf * 8, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(nf * 8),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (nf*8) x 4 x 4
+            nn.Conv2d(nf * 8, 1, 4, 1, 0, bias=False),
+            nn.Sigmoid()
+        )
+
     else:
         return nn.Sequential(
             # input is Z, going into a convolution
-            nn.ConvTranspose2d( nz, ngf * 8, 4, 1, 0, bias=False),
-            nn.BatchNorm2d(ngf * 8),
+            nn.ConvTranspose2d( nz, nf * 8, 4, 1, 0, bias=False),
+            nn.BatchNorm2d(nf * 8),
             nn.ReLU(True),
-            # state size. (ngf*8) x 4 x 4
-            nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf * 4),
+            # state size. (nf*8) x 4 x 4
+            nn.ConvTranspose2d(nf * 8, nf * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(nf * 4),
             nn.ReLU(True),
-            # state size. (ngf*4) x 8 x 8
-            nn.ConvTranspose2d( ngf * 4, ngf * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf * 2),
+            # state size. (nf*4) x 8 x 8
+            nn.ConvTranspose2d( nf * 4, nf * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(nf * 2),
             nn.ReLU(True),
-            # state size. (ngf*2) x 16 x 16
-            nn.ConvTranspose2d( ngf * 2, ngf, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf),
+            # state size. (nf*2) x 16 x 16
+            nn.ConvTranspose2d( nf * 2, nf, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(nf),
             nn.ReLU(True),
-            # state size. (ngf) x 32 x 32
-            nn.ConvTranspose2d( ngf, nc, 4, 2, 1, bias=False),
+            # state size. (nf) x 32 x 32
+            nn.ConvTranspose2d( nf, nc, 4, 2, 1, bias=False),
             nn.Tanh()
             # state size. (nc) x 64 x 64
         )
-
-
-def train():
-    pass
-
-
-def setup():
-    pass
-
