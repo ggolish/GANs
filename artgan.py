@@ -46,8 +46,14 @@ class Generator(nn.Module):
 
 
 class GAN():
-    """ Generalized GAN class """
-    def __init__(self, settings: dict):
+    """
+        Generalized GAN class
+    """
+    def __init__(self, settings: dict, dataset):
+        self.dataloader = dataset.load()
+        self.G_losses = list()
+        self.D_losses = list()
+        iterations = 0
         self.S = settings
         self.D = Critic(
             self.S['arch'],
@@ -62,6 +68,7 @@ class GAN():
         )
 
     def train(self):
+        """ Implementing a default training method from DCGAN """
         pass
 
     def generate_image(self):
