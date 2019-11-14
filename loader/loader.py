@@ -19,17 +19,6 @@ home = os.path.expanduser("~")
 data_path = home + "/research/data/images/Cubism"
 
 
-def load_ross(imsize=256, batch_size=128, verbose=True):
-    if not os.path.exists(ross.final_dir):
-        ross.download()
-    data = load_data(ross.final_dir, verbose=True, imsize=imsize)
-    data /= 255.0
-    # For the gan things
-    # data = (data / 127.5) - 1
-    # return torch.utils.data.DataLoader(data, batch_size=batch_size, shuffle=True)
-    return create_loader(data, batch_size)
-
-
 def create_loader(data, batch_size=128):
     return torch.utils.data.DataLoader(
         data, batch_size=batch_size, shuffle=True)
@@ -39,7 +28,6 @@ def load_data(data_dir=data_path, optimize=True, verbose=False, imsize=256):
 
     if verbose:
         print("Reading image data set...")
-
     files = [f for f in os.listdir(data_dir) if f.endswith(".png") or f.endswith(".jpg")]
     images = list()
     for f in tqdm(files):
@@ -53,31 +41,20 @@ def load_data(data_dir=data_path, optimize=True, verbose=False, imsize=256):
             images.append(img_utils.southwest(original, imsize))
             images.append(img_utils.southeast(original, imsize))
             images.append(img_utils.northeast(original, imsize))
-
     if verbose:
         print("Done.")
-
     return np.array(images, dtype="float32")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="image-loader", description="Utility for loading images")
-    parser.add_argument("-d", "--directory", help="Set the data directory.")
     parser.add_argument("-s", "--size", help="Set the size of the images.")
     args = parser.parse_args(sys.argv[1:])
-
-    if args.directory:
-        if not os.path.exists(args.directory):
-            sys.stderr.write('Specify a valid directory.\n')
-        else:
-            data_path = args.directory
-
     if args.size:
         try:
             imsize = int(args.size)
         except ValueError:
             sys.stderr.write('Image size must be an integer.\n')
-    # print('Testing ross data set')
-    # print(load_ross())
-    print('Loading cubism data set.')
-    print(cubism.load())
+
+    print('Testing ross data set')
+    print(ross.load())
