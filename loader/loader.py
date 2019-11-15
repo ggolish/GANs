@@ -34,7 +34,9 @@ def load_data(ds_info, optimize=True, verbose=False, imsize=256):
         print("Reading image data set...")
 
     if optimize:
-        ds_info["final_dest"] = f"{ds_info['final_dir']}_optimized.npy"
+        ds_info["final_dest"] = f"{ds_info['final_dir']}.optimized.npy"
+
+    ds_info['final_dest'] = ds_info['final_dest'].format(imsize)
 
     if not os.path.exists(ds_info["final_dest"]):
         files = [f for f in os.listdir(ds_info["final_dir"]) if f.endswith(".png") or f.endswith(".jpg")]
