@@ -28,5 +28,10 @@ def load(optimize=True, imsize=256, batch_size=128, verbose=True):
     return create_loader(data, batch_size)
 
 
+def load_np(optimize=True, imsize=256, batch_size=128, verbose=True):
+    global ds_info
+    return load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize)
+
+
 if __name__ == '__main__':
     load()

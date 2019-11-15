@@ -58,8 +58,8 @@ def load_data(ds_info, optimize=True, verbose=False, imsize=256):
         imgnpy = imgnpy / 127.5 - 1.0
         n, _, _, channels = imgnpy.shape
         imgnpy = imgnpy.reshape(n, channels, imsize, imsize)
+        np.save(ds_info["final_dest"], imgnpy)
 
-        np.save(ds_info["final_dest"], imgnpy) 
     else:
         imgnpy = np.load(ds_info["final_dest"])
 

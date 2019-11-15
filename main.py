@@ -7,6 +7,7 @@ import torch
 
 if __name__ == '__main__':
     # Probably want to manage some arguments
-    dl = ross.load()
-    batch = next(iter(dl))
+    dataset = ross.load()
+    batch = next(iter(dataset))
     print(batch.shape, torch.min(batch), torch.max(batch))
+
