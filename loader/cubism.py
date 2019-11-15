@@ -12,20 +12,20 @@ else:
 
 import os
 
-ds = 'cubism'
-data_url = f'http://cs.indstate.edu/~adavenport9/data/wikiart/{ds}.tar.gz'
-data_dest = f'/tmp/{ds}.tar.gz'
-final_dir = f'/tmp/{ds}'
+ds = "cubism"
+ds_info = {
+    "name": ds,
+    "data_url": f'http://cs.indstate.edu/~adavenport9/data/wikiart/{ds}.tar.gz',
+    "data_dest": f'/tmp/{ds}.tar.gz',
+    "final_dir": f'/tmp/{ds}',
+    "final_dest": f'/tmp/{ds}.npy'
+}
 
 
-def download():
-    downloader.download(ds, data_url, data_dest)
+def load(optimize=True, imsize=256, batch_size=128, verbose=True):
+    global ds_info
 
-
-def load(imsize=256, batch_size=128, verbose=True):
-    if not os.path.exists(final_dir):
-        download()
-    data = load_data(final_dir, verbose=True, imsize=imsize)
+    data = load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize)
     data /= 255.0
     # For the gan things
     # data = (data / 127.5) - 1
@@ -34,4 +34,4 @@ def load(imsize=256, batch_size=128, verbose=True):
 
 
 if __name__ == '__main__':
-    download()
+    load()

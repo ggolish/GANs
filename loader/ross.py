@@ -13,18 +13,16 @@ else:
 import os
 
 ds = 'ross-data-resized'
-data_url = f'http://cs.indstate.edu/~ggolish/data/{ds}.tar.gz'
-data_dest = f'/tmp/{ds}.tar.gz'
-final_dir = f'/tmp/{ds}'
+ds_info = {
+    'name': f'{ds}',
+    'data_url': f'http://cs.indstate.edu/~ggolish/data/{ds}.tar.gz',
+    'data_dest': f'/tmp/{ds}.tar.gz',
+    'final_dir': f'/tmp/{ds}',
+    'final_dest': f'/tmp/{ds}.npy'
+}
 
-def download():
-    downloader.download(ds, data_url, data_dest)
-
-
-def load(imsize=256, batch_size=128, verbose=True):
-    if not os.path.exists(final_dir):
-        download()
-    data = load_data(final_dir, verbose=True, imsize=imsize)
+def load(optimize=True, imsize=256, batch_size=128, verbose=True):
+    data = load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize)
     data /= 255.0
     # For the gan things
     # data = (data / 127.5) - 1
@@ -32,4 +30,4 @@ def load(imsize=256, batch_size=128, verbose=True):
 
 
 if __name__ == '__main__':
-    download()
+    load()

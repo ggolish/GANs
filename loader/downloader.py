@@ -8,11 +8,11 @@ import tarfile
 from urllib.request import urlretrieve
 
 
-def download(ds, data_url, data_dest):
-    print(f"Retrieving {ds} data set...")
-    urlretrieve(data_url, filename=data_dest)
+def download(ds_info):
+    print(f"Retrieving {ds_info['name']} data set...")
+    urlretrieve(ds_info["data_url"], filename=ds_info["data_dest"])
     print("Done.")
-    print("Extracting {ds} data set...")
-    with tarfile.open(data_dest, "r") as tfd:
+    print("Extracting {ds_info['name']} data set...")
+    with tarfile.open(ds_info["data_dest"], "r") as tfd:
         tfd.extractall("/tmp")
     print("Done.")
