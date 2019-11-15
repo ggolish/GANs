@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 import torch
 from torch import nn
-from architecture import dc
+from architecture.dc import DCGAN
 from loader import ross
 
 
 DEFAULT_SETTINGS = {
-    'arch': dc,
+    'arch': DCGAN,
     'batch_size': 128,
     'image_size': 64,
-    'channels': 3,
+    'nchannels': 3,
+    'nfeatures': 128,
     'epochs': 1,
     'ncritic': 5,
     'grad': 10,
@@ -22,11 +23,10 @@ DEFAULT_SETTINGS = {
 class Critic(nn.Module):
     """ Critic network class """
 
-    def __init__(self, arch, channels, image_size):
+    def __init__(self, arch, S=DEFAULT_SETTINGS):
         super().__init__()
-        self.arch = arch.build(True, channels, image_size)
-        self.channels = channels
-        self.image_size = image_size
+        self.arch = arch(True, S)
+        self.S = S
 
     def forward(self, x):
         return self.arch(x)
@@ -35,12 +35,10 @@ class Critic(nn.Module):
 class Generator(nn.Module):
     """ Generator network class """
 
-    def __init__(self, arch, channels, image_size, zdim):
+    def __init__(self, arch, S=DEFAULT_SETTINGS):
         super().__init__()
-        self.arch = arch.build(False, channels, image_size, nz=zdim)
-        self.channels = channels
-        self.image_size = image_size
-        self.zdim = zdim
+        self.arch = arch.build(False, S)
+        self.S = S
 
     def forward(self, x):
         return self.arch.forward(x)
@@ -83,9 +81,3 @@ class GAN():
 
 if __name__ == '__main__':
     gan = GAN(ross)
-    with torch.no_grad():
-        img = gan.generate_image()
-
-    print(gan)
-    print(gan.D)
-    print(gan.G)
