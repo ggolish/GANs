@@ -18,11 +18,12 @@ ds_info = {
     'data_url': f'http://cs.indstate.edu/~ggolish/data/{ds}.tar.gz',
     'data_dest': f'/tmp/{ds}.tar.gz',
     'final_dir': f'/tmp/{ds}',
-    'final_dest': f'/tmp/{ds}.npy'
+    'final_dest': f'/tmp/{ds}.{{}}.npy'
 }
 
 def load(optimize=True, imsize=256, batch_size=128, verbose=True):
     global ds_info
+    ds_info['final_dest'] = ds_info['final_dest'].format(imsize)
     data = load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize)
     return create_loader(data, batch_size)
 
