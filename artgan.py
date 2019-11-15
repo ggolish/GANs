@@ -2,6 +2,7 @@
 import torch
 from torch import nn
 from architecture import dc
+from loader import ross
 
 
 DEFAULT_SETTINGS = {
@@ -36,7 +37,7 @@ class Generator(nn.Module):
 
     def __init__(self, arch, channels, image_size, zdim):
         super().__init__()
-        self.arch = arch.build(False, channels, image_size, zdim=zdim)
+        self.arch = arch.build(False, channels, image_size, nz=zdim)
         self.channels = channels
         self.image_size = image_size
         self.zdim = zdim
@@ -49,12 +50,17 @@ class GAN():
     """
         Generalized GAN class
     """
-    def __init__(self, settings: dict, dataset):
+    def __init__(self, dataset, settings={}):
         self.dataloader = dataset.load()
         self.G_losses = list()
         self.D_losses = list()
         iterations = 0
-        self.S = settings
+        self.S = DEFAULT_SETTINGS
+        for k, v in settings:
+            if k in self.S:
+                self.S[k] = v
+            else:
+                sys.stderr.write(f"Warning: Invalid setting {k} = {v}!\n")
         self.D = Critic(
             self.S['arch'],
             self.S['channels'],
@@ -71,12 +77,15 @@ class GAN():
         """ Implementing a default training method from DCGAN """
         pass
 
-    def generate_image(self):
-        pass
-
+    def generate_image(self, n=1):
+        z = torch.normal(0, 1, (n, self.S['zdim']))
+        return self.G(z)
 
 if __name__ == '__main__':
-    gan = GAN(DEFAULT_SETTINGS)
+    gan = GAN(ross)
+    with torch.no_grad():
+        img = gan.generate_image()
+
     print(gan)
     print(gan.D)
     print(gan.G)
