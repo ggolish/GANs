@@ -39,7 +39,7 @@ def load_data(ds_info, optimize=True, verbose=False, imsize=256):
     if not os.path.exists(ds_info["final_dest"]):
         files = [f for f in os.listdir(ds_info["final_dir"]) if f.endswith(".png") or f.endswith(".jpg")]
         images = list()
-        for f in tqdm(files):
+        for f in tqdm(files, ascii=True):
             path = os.path.join(ds_info["final_dir"], f)
             original = cv2.imread(path)
             img = cv2.resize(original, dsize=(imsize, imsize), interpolation=cv2.INTER_CUBIC)
