@@ -4,13 +4,17 @@
     Module for loading an image data set as a numpy array
 """
 
+if __name__ == "loader.loader":
+    from . import img_utils
+else:
+    import img_utils
+
 import cv2
 import numpy as np
 import os
 import sys
 import argparse
 import torch
-import img_utils
 from tqdm import tqdm
 
 home = os.path.expanduser("~")

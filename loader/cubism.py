@@ -3,8 +3,13 @@
 """
     Module for loading the Cubism data set
 """
-import downloader
-from loader import load_data, create_loader
+if __name__ == "loader.cubism":
+    from . import downloader
+    from .loader import load_data, create_loader
+else:
+    import downloader
+    from loader import load_data, create_loader
+
 import os
 
 ds = 'cubism'

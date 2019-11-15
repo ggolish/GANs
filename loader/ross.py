@@ -3,9 +3,14 @@
     Module for loading the Bob Ross data set as a numpy array
 '''
 
-import downloader
+if __name__ == "loader.ross":
+    from . import downloader
+    from .loader import load_data, create_loader
+else:
+    import downloader
+    from loader import load_data, create_loader
+
 import os
-from loader import load_data, create_loader
 
 ds = 'ross-data-resized'
 data_url = f'http://cs.indstate.edu/~ggolish/data/{ds}.tar.gz'
