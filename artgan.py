@@ -5,7 +5,7 @@ from architecture import dc
 
 
 DEFAULT_SETTINGS = {
-    'arch': dc.arch,
+    'arch': dc,
     'batch_size': 128,
     'image_size': 64,
     'channels': 3,
@@ -23,7 +23,7 @@ class Critic(nn.Module):
 
     def __init__(self, arch, channels, image_size):
         super().__init__()
-        self.arch = arch(True, channels, image_size)
+        self.arch = arch.build(True, channels, image_size)
         self.channels = channels
         self.image_size = image_size
 
@@ -36,7 +36,7 @@ class Generator(nn.Module):
 
     def __init__(self, arch, channels, image_size, zdim):
         super().__init__()
-        self.arch = arch(False, channels, image_size, zdim=zdim)
+        self.arch = arch.build(False, channels, image_size, zdim=zdim)
         self.channels = channels
         self.image_size = image_size
         self.zdim = zdim

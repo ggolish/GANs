@@ -6,7 +6,7 @@
 
 from torch import nn
 
-def arch(isCritic, nc, nf, nz=100):
+def build(isCritic, nc, nf, nz=100):
     """
         isCritic: 
         nc : number of channels
