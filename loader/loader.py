@@ -51,6 +51,12 @@ def load_data(ds_info, optimize=True, verbose=False, imsize=256):
                 images.append(img_utils.southeast(original, imsize))
                 images.append(img_utils.northeast(original, imsize))
         imgnpy = np.array(images, dtype="float32")
+
+        # Get the data ready for a pytorch GAN
+        imgnpy = imgnpy / 127.5 - 1.0
+        n, _, _, channels = imgnpy.shape
+        imgnpy = imgnpy.reshape(n, channels, imsize, imsize)
+
         np.save(ds_info["final_dest"], imgnpy) 
     else:
         imgnpy = np.load(ds_info["final_dest"])

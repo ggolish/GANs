@@ -22,10 +22,8 @@ ds_info = {
 }
 
 def load(optimize=True, imsize=256, batch_size=128, verbose=True):
+    global ds_info
     data = load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize)
-    data /= 255.0
-    # For the gan things
-    # data = (data / 127.5) - 1
     return create_loader(data, batch_size)
 
 
