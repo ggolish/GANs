@@ -4,10 +4,10 @@
     The architectures are specific to the data being used in our experiments.
 '''
 
-from torch.nn import Conv2d, Conv2dTranspose, BatchNorm2d, 
+from torch.nn import Conv2d, ConvTranspose2d, BatchNorm2d
 from torch.nn.functional import leaky_relu
 
-class DC():
+class DCGAN():
     ''' Deep Convolutional GAN architecture, for image sizes n s.t. 2^x = n where x is in N^+'''
 
     def __init__(self, is_critic, S):
@@ -16,10 +16,10 @@ class DC():
         self.zdim = S["zdim"]
 
         if is_critic:
-            self.conv1 = Conv2d(self.nchannels, self.nfeatures, kernal_size=3, stride=2)
-            self.conv2 = Conv2d(self.nfeatures * 2, self.nfeatures * 4, kernal_size=3, stride=2)
-            self.conv3 = Conv2d(self.nfeatures * 4, self.nfeatures * 8, kernal_size=3, stride=2)
-            self.conv4 = Conv2d(self.nfeatures * 8, 1, kernal_size=3, stride=1)
+            self.conv1 = Conv2d(self.nchannels, self.nfeatures, 3, stride=2)
+            self.conv2 = Conv2d(self.nfeatures, self.nfeatures * 2, 3, stride=2)
+            self.conv3 = Conv2d(self.nfeatures * 2, self.nfeatures * 4, 3, stride=2)
+            self.conv4 = Conv2d(self.nfeatures * 4, 1, 3, stride=1)
         else:
             pass
         pass
@@ -34,6 +34,7 @@ class DC():
         print(x.shape)
         x = self.conv4(x)
         print(x.shape)
+        return x
 
 def build(isCritic, nc, nf, nz=100):
     """
