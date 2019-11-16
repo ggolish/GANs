@@ -23,10 +23,13 @@ class DCGAN():
             self.conv1 = Conv2d(self.nchannels, self.nfeatures, 3, stride=2)
             curr_size = convolution_size(curr_size)
             self.conv2 = Conv2d(self.nfeatures, self.nfeatures * 2, 3, stride=2)
+            self.bn1 = BatchNorm2d(self.nfeatures * 2)
             curr_size = convolution_size(curr_size)
             self.conv3 = Conv2d(self.nfeatures * 2, self.nfeatures * 4, 3, stride=2)
+            self.bn2 = BatchNorm2d(self.nfeatures * 4)
             curr_size = convolution_size(curr_size)
             self.conv4 = Conv2d(self.nfeatures * 4, self.nfeatures * 8, 3, stride=2)
+            self.bn3 = BatchNorm2d(self.nfeatures * 8)
             curr_size = convolution_size(curr_size)
             self.fc1_size = 8 * self.nfeatures * curr_size * curr_size
             self.fc1 = Linear(self.fc1_size, 1)
@@ -36,17 +39,11 @@ class DCGAN():
 
     def forward(self, x):
         if self.is_critic:
-            print(x.shape)
-            x = self.conv1(x)
-            print(x.shape)
-            x = self.conv2(x)
-            print(x.shape)
-            x = self.conv3(x)
-            print(x.shape)
-            x = self.conv4(x)
-            print(x.shape)
+            x = leaky_relu(self.conv1(x))
+            x = leaky_relu(self.bn1(self.conv2(x)))
+            x = leaky_relu(self.bn2(self.conv3(x)))
+            x = leaky_relu(self.bn3(self.conv4(x)))
             x = self.fc1(x.view(-1, self.fc1_size))
-            print(x.shape)
         else:
             pass
         return x
