@@ -50,7 +50,6 @@ class GAN():
         Generalized GAN class
     """
     def __init__(self, dataset, settings={}):
-        self.dl = dataset.load()
         iterations = 0
         self.S = DEFAULT_SETTINGS
         for k, v in settings:
@@ -60,6 +59,7 @@ class GAN():
                 sys.stderr.write(f"Warning: Invalid setting {k} = {v}!\n")
         self.D = Critic(self.S)
         self.G = Generator(self.S)
+        self.dl = dataset.load(imsize=self.S["image_size"])
 
     def train(self):
         """ Implementing a default training method from DCGAN """
