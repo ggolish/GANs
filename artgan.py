@@ -38,7 +38,7 @@ class Generator(nn.Module):
 
     def __init__(self, S=DEFAULT_SETTINGS):
         super().__init__()
-        self.arch = S["generator_arch"](True, S)
+        self.arch = S["generator_arch"](False, S)
         self.S = S
 
     def forward(self, x):
@@ -52,7 +52,7 @@ class GAN():
     def __init__(self, dataset, settings={}):
         iterations = 0
         self.S = DEFAULT_SETTINGS
-        for k, v in settings:
+        for k, v in settings.items():
             if k in self.S:
                 self.S[k] = v
             else:
@@ -70,9 +70,9 @@ class GAN():
         return self.G(z)
 
 if __name__ == '__main__':
-    gan = GAN(ross)
+    gan = GAN(ross, {"image_size": 256})
     with torch.no_grad():
-        batch = next(iter(gan.dl))
-        gan.D(batch)
+        z = torch.normal(0, 1, (1, 100))
+        gan.G(z)
 
 

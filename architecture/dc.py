@@ -6,8 +6,9 @@
 
 import math
 
+import torch
 from torch.nn import Conv2d, ConvTranspose2d, BatchNorm2d, Linear
-from torch.nn.functional import leaky_relu
+from torch.nn.functional import leaky_relu, relu
 
 class DCGAN():
     ''' Deep Convolutional GAN architecture, for image sizes n s.t. 2^x = n where x is in N^+'''
@@ -18,24 +19,29 @@ class DCGAN():
         self.nfeatures = S["nfeatures"]
         self.zdim = S["zdim"]
 
+        self.final_size = S["image_size"]
+        for _ in range(4):
+            self.final_size = convolution_size(self.final_size)
+        self.fc1_size = 8 * self.nfeatures * self.final_size * self.final_size
+
         if is_critic:
-            curr_size = S["image_size"]
             self.conv1 = Conv2d(self.nchannels, self.nfeatures, 3, stride=2)
-            curr_size = convolution_size(curr_size)
             self.conv2 = Conv2d(self.nfeatures, self.nfeatures * 2, 3, stride=2)
             self.bn1 = BatchNorm2d(self.nfeatures * 2)
-            curr_size = convolution_size(curr_size)
             self.conv3 = Conv2d(self.nfeatures * 2, self.nfeatures * 4, 3, stride=2)
             self.bn2 = BatchNorm2d(self.nfeatures * 4)
-            curr_size = convolution_size(curr_size)
             self.conv4 = Conv2d(self.nfeatures * 4, self.nfeatures * 8, 3, stride=2)
             self.bn3 = BatchNorm2d(self.nfeatures * 8)
-            curr_size = convolution_size(curr_size)
-            self.fc1_size = 8 * self.nfeatures * curr_size * curr_size
             self.fc1 = Linear(self.fc1_size, 1)
         else:
-            pass
-        pass
+            self.fc1 = Linear(self.zdim, self.fc1_size)
+            self.conv1 = ConvTranspose2d(8 * self.nfeatures, 4 * self.nfeatures, 3, stride=2)
+            self.bn1 = BatchNorm2d(4 * self.nfeatures)
+            self.conv2 = ConvTranspose2d(4 * self.nfeatures, 2 * self.nfeatures, 3, stride=2)
+            self.bn2 = BatchNorm2d(2 * self.nfeatures)
+            self.conv3 = ConvTranspose2d(2 * self.nfeatures, self.nfeatures, 3, stride=2)
+            self.bn3 = BatchNorm2d(self.nfeatures)
+            self.conv4 = ConvTranspose2d(self.nfeatures, self.nchannels, 4, stride=2)
 
     def forward(self, x):
         if self.is_critic:
@@ -45,7 +51,11 @@ class DCGAN():
             x = leaky_relu(self.bn3(self.conv4(x)))
             x = self.fc1(x.view(-1, self.fc1_size))
         else:
-            pass
+            x = self.fc1(x).view(-1, 8 * self.nfeatures, self.final_size, self.final_size)
+            x = relu(self.bn1(self.conv1(x)))
+            x = relu(self.bn2(self.conv2(x)))
+            x = relu(self.bn3(self.conv3(x)))
+            x = torch.tanh(self.conv4(x))
         return x
 
 
@@ -53,55 +63,3 @@ def convolution_size(imsize, kernal_size=3, stride=2, padding=0, dilation=1):
     ''' Helper function to calculate image size after a convolution. '''
     return math.floor((imsize + 2 * padding - dilation * (kernal_size - 1) - 1) / stride + 1)
 
-def build(isCritic, nc, nf, nz=100):
-    """
-        isCritic: 
-        nc : number of channels
-        nf : number of features
-        nz : optional size of latent vector
-    """
-    if isCritic:
-         return nn.Sequential(
-            # input is (nc) x 64 x 64
-            nn.Conv2d(nc, nf, 4, 2, 1, bias=False),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (nf) x 32 x 32
-            nn.Conv2d(nf, nf * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(nf * 2),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (nf*2) x 16 x 16
-            nn.Conv2d(nf * 2, nf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(nf * 4),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (nf*4) x 8 x 8
-            nn.Conv2d(nf * 4, nf * 8, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(nf * 8),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (nf*8) x 4 x 4
-            nn.Conv2d(nf * 8, 1, 4, 1, 0, bias=False),
-            nn.Sigmoid()
-        )
-
-    else:
-        return nn.Sequential(
-            # input is Z, going into a convolution
-            nn.ConvTranspose2d( nz, nf * 8, 4, 1, 0, bias=False),
-            nn.BatchNorm2d(nf * 8),
-            nn.ReLU(True),
-            # state size. (nf*8) x 4 x 4
-            nn.ConvTranspose2d(nf * 8, nf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(nf * 4),
-            nn.ReLU(True),
-            # state size. (nf*4) x 8 x 8
-            nn.ConvTranspose2d( nf * 4, nf * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(nf * 2),
-            nn.ReLU(True),
-            # state size. (nf*2) x 16 x 16
-            nn.ConvTranspose2d( nf * 2, nf, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(nf),
-            nn.ReLU(True),
-            # state size. (nf) x 32 x 32
-            nn.ConvTranspose2d( nf, nc, 4, 2, 1, bias=False),
-            nn.Tanh()
-            # state size. (nc) x 64 x 64
-        )
