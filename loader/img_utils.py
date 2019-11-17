@@ -6,6 +6,7 @@ import cv2
 
 
 def crop(img: np.array, size):
+    """ Take a numpy array and crop it to size """
     y, x, z = img.shape
     cx = (x // 2) - (size // 2)
     cy = (y // 2) - (size // 2)
@@ -13,6 +14,7 @@ def crop(img: np.array, size):
 
 
 def northwest(img, size):
+    """ Take the northwest 2/3 of an image and return it scaled down to size """
     y, x, z = img.shape
     # return np.resize(img[:y//4, :x//4, :], (size, size, z))
     img = img[:(y*2)//3, :(x*2)//3, :]
@@ -20,18 +22,21 @@ def northwest(img, size):
 
 
 def southwest(img: np.array, size):
+    """ Take the southwest 2/3 of an image and return it scaled down to size """
     y, x, z = img.shape
     img = img[-(y*2)//3:, :(x*2)//3, :]
     return cv2.resize(img, dsize=(size, size), interpolation=cv2.INTER_CUBIC)
 
 
 def southeast(img: np.array, size):
+    """ Take the southeast 2/3 of an image and return it scaled down to size """
     y, x, z = img.shape
     img = img[-(y*2)//3:, -(x*2)//3:, :]
     return cv2.resize(img, dsize=(size, size), interpolation=cv2.INTER_CUBIC)
 
 
 def northeast(img: np.array, size):
+    """ Take the northeast 2/3 of an image and return it scaled down to size """
     y, x, z = img.shape
     img = img[:(y*2)//3, -(x*2)//3:, :]
     return cv2.resize(img, dsize=(size, size), interpolation=cv2.INTER_CUBIC)
