@@ -61,16 +61,18 @@ class GAN():
         self.G = Generator(self.S)
         self.dl = dataset.load(imsize=self.S["image_size"])
 
-    def train(self):
-        """ Implementing a default training method from DCGAN """
-        pass
+    def train(self, epochs):
+        """ Train the network for given epochs """
+        for epoch in tqdm(range(epochs)):
+            pass
+
 
     def generate_image(self, n=1):
         z = torch.normal(0, 1, (n, self.S['zdim']))
         return self.G(z)
 
 if __name__ == '__main__':
-    gan = GAN(ross, {"image_size": 256})
+    gan = GAN(ross, {'image_size': 256})
     with torch.no_grad():
         z = torch.normal(0, 1, (1, 100))
         gan.G(z)
