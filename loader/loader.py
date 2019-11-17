@@ -34,7 +34,9 @@ def load_data(ds_info, optimize=True, verbose=False, imsize=256):
         print("Reading image data set...")
 
     if optimize:
-        ds_info["final_dest"] = f"{ds_info['final_dir']}.optimized.npy"
+        ds_info["final_dest"] = f"{ds_info['final_dir']}.{imsize}.optimized.npy"
+    else:
+        ds_info["final_dest"] = f"{ds_info['final_dir']}.{imsize}.npy"
 
     ds_info['final_dest'] = ds_info['final_dest'].format(imsize)
 

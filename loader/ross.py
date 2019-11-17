@@ -18,7 +18,7 @@ ds_info = {
     'data_url': f'http://cs.indstate.edu/~ggolish/data/{ds}.tar.gz',
     'data_dest': f'/tmp/{ds}.tar.gz',
     'final_dir': f'/tmp/{ds}',
-    'final_dest': f'/tmp/{ds}.{{}}.npy'
+    'final_dest': f'/tmp/{ds}.npy'
 }
 
 def load(optimize=True, imsize=256, batch_size=128, verbose=True):
