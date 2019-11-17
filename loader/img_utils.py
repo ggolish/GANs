@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+""" Module for image utilities. """
+
 import numpy as np
 import cv2
-
 
 
 def crop(img: np.array, size):

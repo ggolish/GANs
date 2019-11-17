@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-'''
+"""
     Module for loading the Bob Ross data set as a numpy array
-'''
+"""
 
-if __name__ == "loader.ross":
+if __name__ == 'loader.ross':
     from . import downloader
     from .loader import load_data, create_loader
 else:
     import downloader
     from loader import load_data, create_loader
 
-import os
 
 ds = 'ross-data-resized'
 ds_info = {

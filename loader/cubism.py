@@ -3,7 +3,7 @@
 """
     Module for loading the Cubism data set
 """
-if __name__ == "loader.cubism":
+if __name__ == 'loader.cubism':
     from . import downloader
     from .loader import load_data, create_loader
 else:
@@ -12,13 +12,13 @@ else:
 
 import os
 
-ds = "cubism"
+ds = 'cubism'
 ds_info = {
-    "name": ds,
-    "data_url": f'http://cs.indstate.edu/~adavenport9/data/wikiart/{ds}.tar.gz',
-    "data_dest": f'/tmp/{ds}.tar.gz',
-    "final_dir": f'/tmp/{ds}',
-    "final_dest": f'/tmp/{ds}.npy'
+    'name': ds,
+    'data_url': f'http://cs.indstate.edu/~adavenport9/data/wikiart/{ds}.tar.gz',
+    'data_dest': f'/tmp/{ds}.tar.gz',
+    'final_dir': f'/tmp/{ds}',
+    'final_dest': f'/tmp/{ds}.npy'
 }
 
 
