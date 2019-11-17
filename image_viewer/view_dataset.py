@@ -15,7 +15,7 @@ def show_images(imgs: np.array, cols, rows, shuffle=True):
     shuffle(imgs)
     fig=plt.figure(figsize=(8, 8))
     for i in range(1, cols*rows +1):
-        fig.add_subplot(rows, columns, i)
+        fig.add_subplot(rows, cols, i)
         # Have to do i-1 due to the indexes here
         plt.imshow(imgs[i-1])
     plt.show()
