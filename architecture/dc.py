@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-'''
+"""
     Differenet architectures to be used as the generator or critic in a WGAN.
     The architectures are specific to the data being used in our experiments.
-'''
+"""
 
 import math
 
@@ -11,15 +11,15 @@ from torch.nn import Conv2d, ConvTranspose2d, BatchNorm2d, Linear
 from torch.nn.functional import leaky_relu, relu
 
 class DCGAN():
-    ''' Deep Convolutional GAN architecture, for image sizes n s.t. 2^x = n where x is in N^+'''
+    """ Deep Convolutional GAN architecture, for image sizes n s.t. 2^x = n where x is in N^+"""
 
     def __init__(self, is_critic, S):
         self.is_critic = is_critic
-        self.nchannels = S["nchannels"]
-        self.nfeatures = S["nfeatures"]
-        self.zdim = S["zdim"]
+        self.nchannels = S['nchannels']
+        self.nfeatures = S['nfeatures']
+        self.zdim = S['zdim']
 
-        self.final_size = S["image_size"]
+        self.final_size = S['image_size']
         for _ in range(4):
             self.final_size = convolution_size(self.final_size)
         self.fc1_size = 8 * self.nfeatures * self.final_size * self.final_size
@@ -60,6 +60,6 @@ class DCGAN():
 
 
 def convolution_size(imsize, kernal_size=3, stride=2, padding=0, dilation=1):
-    ''' Helper function to calculate image size after a convolution. '''
+    """ Helper function to calculate image size after a convolution. """
     return math.floor((imsize + 2 * padding - dilation * (kernal_size - 1) - 1) / stride + 1)
 
