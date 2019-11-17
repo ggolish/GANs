@@ -10,8 +10,6 @@ else:
     import downloader
     from loader import load_data, create_loader
 
-import os
-
 ds = 'cubism'
 ds_info = {
     'name': ds,
