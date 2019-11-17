@@ -20,11 +20,17 @@ ds_info = {
     'final_dest': f'/tmp/{ds}.npy'
 }
 
+
 def load(optimize=True, imsize=256, batch_size=128, verbose=True):
     global ds_info
     ds_info['final_dest'] = ds_info['final_dest'].format(imsize)
     data = load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize)
     return create_loader(data, batch_size)
+
+
+def load_np(optimize=True, imsize=256, batch_size=128, verbose=True):
+    global ds_info
+    return load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize)
 
 
 if __name__ == '__main__':
