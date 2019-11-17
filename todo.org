@@ -1,0 +1,22 @@
+#+TITLE: CS 695
+
+* Architecture
+* Saving
+ - [ ] Network saving
+ - [ ] Network loading
+ - [ ] Save checkpoints
+ - [ ] Images
+   - [ ] Save generated images
+   - [ ] Make gif of images
+
+* Image Visualization
+ - [ ] View raw dataset.
+ - [ ] View generated images.
+ - [ ] Animate the images as the network improves.
+
+* Plotting
+ - [ ] Visualize losses
+ - [ ] Compare image optimizations
+ - [ ] Compare dataset sizes
+
+* Web or notebook to display results of project.
