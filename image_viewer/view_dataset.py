@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+""" Base module for viewing images from a numpy array """
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +11,7 @@ from loader import cubism
 
 
 def show_images(imgs: np.array, cols, rows, shuffle=True):
+    """ Take images stored in a np array and plot them. """
     shuffle(imgs)
     fig=plt.figure(figsize=(8, 8))
     for i in range(1, cols*rows +1):
