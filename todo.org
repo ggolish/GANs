@@ -13,7 +13,7 @@
  - [ ] View raw dataset.
  - [ ] View generated images.
  - [ ] Animate the images as the network improves.
- - [ ] Replace cv2
+ - [X] Replace cv2
 
 * Plotting
  - [ ] Graph losses
