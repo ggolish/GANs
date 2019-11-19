@@ -10,6 +10,7 @@ import os
 import sys
 import argparse
 import torch
+import imageio
 from tqdm import tqdm
 
 if __name__ == "loader.loader":
@@ -45,7 +46,7 @@ def load_data(ds_info, optimize=True, verbose=False, imsize=256):
         images = list()
         for f in tqdm(files, ascii=True):
             path = os.path.join(ds_info['final_dir'], f)
-            original = cv2.imread(path)
+            original = imageio.imread(path)
             img = cv2.resize(original, dsize=(imsize, imsize), interpolation=cv2.INTER_CUBIC)
             images.append(img)
             if optimize:

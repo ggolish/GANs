@@ -12,7 +12,7 @@ from loader import ross
 
 
 def make_viewable(imgs: np.array):
-    imgs = (imgs + 1) / 2
+    imgs = ((imgs * 127.5) + 127.5).astype('int16')
     n, c, y, x = imgs.shape
     return imgs.reshape(n, y, x, c)
 
@@ -27,12 +27,12 @@ def show_images(imgs: np.array, cols, rows, randomize=True):
         fig.add_subplot(rows, cols, i)
         # Have to do i-1 due to the indexes here
         plt.imshow(imgs[i-1])
-    plt.axis('off')
     plt.axis('tight')
     plt.axis('image')
+    plt.axis('off')
     plt.show()
 
 
 if __name__ == '__main__':
     imgs = ross.load_np(imsize=256)
-    show_images(imgs, 5, 5)
+    show_images(imgs, 5, 5, randomize=False)
