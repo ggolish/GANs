@@ -1,6 +1,13 @@
 #+TITLE: CS 695
 
 * Architecture
+  - [ ] Implment archituctures for MLPGAN, DCGAN, and ResNetGAN
+  - [ ] Run training on each type of architecture for comparison
+
+* Parallelization
+  - [ ] Investigate PyTorch's method of parallelization
+  - [ ] Parallel training on cubism data set
+
 * Saving
  - [ ] Network saving
  - [ ] Network loading
