@@ -1,6 +1,8 @@
 #+TITLE: CS 695
 
 * Architecture
+ - [ ] Do cool stuff
+
 * Saving
  - [ ] Network saving
  - [ ] Network loading
@@ -21,5 +23,7 @@
  - [ ] Compare dataset sizes
 
 * Web or notebook to display results of project.
+ - [ ] Host notebook on web
+ 
 * Get Gage to Use Doom
  - [ ] DOOM
