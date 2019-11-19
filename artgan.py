@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+import sys
 import torch
+import random
 from torch import nn
 from architecture.dc import DCGAN
 from loader import ross
+from matplotlib import pyplot as plt
 
 
 DEFAULT_SETTINGS = {
@@ -13,12 +16,14 @@ DEFAULT_SETTINGS = {
     'nchannels': 3,             # The number of color channels in the images
     'nfeatures': 128,           # DCGAN: The starting number of kernals in first layer
     'iterations': 1,            # The number of iterations to train on
+    'sample_rate': 1,           # The number of iterations in which to report stats
     'ncritic': 5,               # The number of times to train critic per iteration
     'grad': 10,                 # The gradient penalty for critic
     'learning_rate': 0.0001,    # The learning rate for adam optimizer
     'beta1': 0,                 # The first beta for adam optimizer
     'beta2': 0.9,               # The second beta for adam optimizer
-    'zdim': 100                 # The number of entries in the latent vectors
+    'zdim': 100,                # The number of entries in the latent vectors
+    'device': "cpu"             # The device to run training on
 }
 
 class Critic(nn.Module):
@@ -50,21 +55,35 @@ class GAN():
         Generalized GAN class
     """
     def __init__(self, dataset, settings={}):
-        iterations = 0
         self.S = DEFAULT_SETTINGS
         for k, v in settings.items():
             if k in self.S:
                 self.S[k] = v
             else:
                 sys.stderr.write(f"Warning: Invalid setting {k} = {v}!\n")
-        self.D = Critic(self.S)
-        self.G = Generator(self.S)
-        self.dl = dataset.load(imsize=self.S["image_size"])
 
-    def train(self, epochs):
-        """ Train the network for given epochs """
-        for epoch in tqdm(range(epochs)):
-            pass
+        if self.S["device"] == "cuda" and torch.cuda.is_available() == False:
+            sys.stderr.write("Warning: Device set to cuda, cuda not available.\n")
+
+        self.device = torch.device(self.S["device"])
+        self.D = Critic(self.S).to(self.device)
+        self.G = Generator(self.S).to(self.device)
+        self.dl = dataset.load(batch_size=self.S["batch_size"], imsize=self.S["image_size"])
+
+    def train(self):
+        """ Train the GAN for a specified number of iterations """
+        for iteration in range(self.S['iterations']):
+            batch_real = next(iter(self.dl)).to(self.device)
+            batch_latent = torch.normal(0, 1, (self.S["batch_size"], self.S["zdim"])).to(self.device)
+            for i in range(self.S["batch_size"]):
+                x_real = batch_real[i].unsqueeze(0)
+                z = batch_latent[i].unsqueeze(0)
+                e = random.uniform(0, 1)
+                x_fake = self.G(z)
+                x_diff = e * x_real + (1 - e) * x_fake
+                d_real = self.D(x_real)
+                d_fake = self.D(x_fake)
+                d_diff = self.D(x_diff)
 
 
     def generate_image(self, n=1):
@@ -73,8 +92,6 @@ class GAN():
 
 if __name__ == '__main__':
     gan = GAN(ross, {'image_size': 256})
-    with torch.no_grad():
-        z = torch.normal(0, 1, (1, 100))
-        gan.G(z)
+    gan.train()
 
 
