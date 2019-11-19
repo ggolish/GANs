@@ -4,13 +4,14 @@
     Module for loading an image data set as a numpy array
 """
 
-import cv2
 import numpy as np
 import os
 import sys
 import argparse
 import torch
 import imageio
+import skimage
+from skimage.transform import resize
 from tqdm import tqdm
 
 if __name__ == "loader.loader":
@@ -47,7 +48,7 @@ def load_data(ds_info, optimize=True, verbose=False, imsize=256):
         for f in tqdm(files, ascii=True):
             path = os.path.join(ds_info['final_dir'], f)
             original = imageio.imread(path)
-            img = cv2.resize(original, dsize=(imsize, imsize), interpolation=cv2.INTER_CUBIC)
+            img = resize(original, (imsize, imsize, 3), cval=3, preserve_range=True, anti_aliasing=True)
             images.append(img)
             if optimize:
                 images.append(np.flip(img, 1))

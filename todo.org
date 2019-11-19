@@ -1,4 +1,4 @@
-#+TITLE: CS 695
+#+TITLE: Every Network Needs a Friend
 
 * Architecture
   - [ ] Implment archituctures for MLPGAN, DCGAN, and ResNetGAN
@@ -20,6 +20,7 @@
  - [ ] View raw dataset.
  - [ ] View generated images.
  - [ ] Animate the images as the network improves.
+ - [X] Replace cv2
 
 * Plotting
  - [ ] Graph losses
@@ -27,3 +28,7 @@
  - [ ] Compare dataset sizes
 
 * Web or notebook to display results of project.
+ - [ ] Host notebook on web
+ 
+* Get Gage to Use Doom
+ - [ ] DOOM

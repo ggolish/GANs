@@ -22,14 +22,11 @@ def show_images(imgs: np.array, cols, rows, randomize=True):
     imgs = make_viewable(imgs)
     if randomize:
         np.random.shuffle(imgs)
-    fig = plt.figure(figsize=(256, 256))
-    for i in range(1, cols*rows + 1):
-        fig.add_subplot(rows, cols, i)
-        # Have to do i-1 due to the indexes here
-        plt.imshow(imgs[i-1])
-    plt.axis('tight')
-    plt.axis('image')
+    print(imgs.shape)
+    im_size = imgs.shape[2]
+    grid = imgs[:cols*rows].reshape(rows, cols, im_size, im_size, 3).swapaxes(1, 2).reshape(im_size * rows, im_size * cols, 3)
     plt.axis('off')
+    plt.imshow(grid)
     plt.show()
 
 
