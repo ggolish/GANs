@@ -26,7 +26,7 @@ def show_images(imgs: np.array, cols, rows, randomize=True):
     im_size = imgs.shape[2]
     grid = imgs[:cols*rows].reshape(rows, cols, im_size, im_size, 3).swapaxes(1, 2).reshape(im_size * rows, im_size * cols, 3)
     plt.axis('off')
-    plt.imshow(grid, bbox_inches='tight')
+    plt.imshow(grid)
     plt.show()
 
 
