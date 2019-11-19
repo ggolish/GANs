@@ -1,8 +1,8 @@
-#+TITLE: CS 695
+#+TITLE: Every Network Needs a Friend
 
 * Architecture
  - [ ] Do cool stuff
-
+  
 * Saving
  - [ ] Network saving
  - [ ] Network loading
