@@ -2,7 +2,7 @@
 import sys
 import torch
 import random
-from torch import nn
+from torch.optim import Adam
 from architecture.dc import DCGAN
 from loader import ross
 from matplotlib import pyplot as plt
@@ -72,6 +72,10 @@ class GAN():
 
     def train(self):
         """ Train the GAN for a specified number of iterations """
+
+        d_optim = Adam(self.D.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+        g_optim = Adam(self.G.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+
         for iteration in range(self.S['iterations']):
             batch_real = next(iter(self.dl)).to(self.device)
             batch_latent = torch.normal(0, 1, (self.S["batch_size"], self.S["zdim"])).to(self.device)
@@ -96,6 +100,8 @@ class GAN():
                     L[i] = d_fake - d_real + penalty
                 loss = torch.reduce_mean(L)
                 loss.backward()
+                d_optim.step()
+
 
 
     def generate_image(self, n=1):
