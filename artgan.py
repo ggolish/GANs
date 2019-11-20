@@ -2,6 +2,7 @@
 import sys
 import torch
 import random
+from torch.nn import Module
 from torch.optim import Adam
 from architecture.dc import DCGAN
 from loader import ross
@@ -19,6 +20,7 @@ DEFAULT_SETTINGS = {
     'sample_rate': 1,           # The number of iterations in which to report stats
     'ncritic': 5,               # The number of times to train critic per iteration
     'gradient_penalty': 10,     # The gradient penalty for critic
+    'gp_enabled': False,        # Training with gradient penalty flag
     'learning_rate': 0.0001,    # The learning rate for adam optimizer
     'beta1': 0,                 # The first beta for adam optimizer
     'beta2': 0.9,               # The second beta for adam optimizer
@@ -26,7 +28,7 @@ DEFAULT_SETTINGS = {
     'device': "cpu"             # The device to run training on
 }
 
-class Critic(nn.Module):
+class Critic(Module):
     """ Critic network class """
 
     def __init__(self, S=DEFAULT_SETTINGS):
@@ -38,7 +40,7 @@ class Critic(nn.Module):
         return self.arch.forward(x)
 
    
-class Generator(nn.Module):
+class Generator(Module):
     """ Generator network class """
 
     def __init__(self, S=DEFAULT_SETTINGS):
@@ -102,14 +104,11 @@ class GAN():
                 loss.backward()
                 d_optim.step()
 
-
-
     def generate_image(self, n=1):
         z = torch.normal(0, 1, (n, self.S['zdim']))
         return self.G(z)
 
 if __name__ == '__main__':
-    gan = GAN(ross, {'image_size': 256})
-    gan.train()
+    gan = GAN(ross, {'image_size': 32, 'gp_enabled': True})
 
 

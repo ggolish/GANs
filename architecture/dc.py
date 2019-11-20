@@ -5,10 +5,14 @@
 """
 
 import math
-
 import torch
 from torch.nn import Conv2d, ConvTranspose2d, BatchNorm2d, Linear
 from torch.nn.functional import leaky_relu, relu
+
+if __name__ == "architecture.dc":
+    from .common import Identity
+else:
+    from common import Identity
 
 class DCGAN():
     """ Deep Convolutional GAN architecture, for image sizes n s.t. 2^x = n where x is in N^+"""
@@ -18,7 +22,8 @@ class DCGAN():
         self.nchannels = S['nchannels']
         self.nfeatures = S['nfeatures']
         self.zdim = S['zdim']
-
+        self.gp_enabled = S['gp_enabled']
+        
         self.final_size = S['image_size']
         for _ in range(4):
             self.final_size = convolution_size(self.final_size)
@@ -27,11 +32,11 @@ class DCGAN():
         if is_critic:
             self.conv1 = Conv2d(self.nchannels, self.nfeatures, 3, stride=2)
             self.conv2 = Conv2d(self.nfeatures, self.nfeatures * 2, 3, stride=2)
-            self.bn1 = BatchNorm2d(self.nfeatures * 2)
+            self.bn1 = Identity() if self.gp_enabled else BatchNorm2d(self.nfeatures * 2)
             self.conv3 = Conv2d(self.nfeatures * 2, self.nfeatures * 4, 3, stride=2)
-            self.bn2 = BatchNorm2d(self.nfeatures * 4)
+            self.bn2 = Identity() if self.gp_enabled else BatchNorm2d(self.nfeatures * 4)
             self.conv4 = Conv2d(self.nfeatures * 4, self.nfeatures * 8, 3, stride=2)
-            self.bn3 = BatchNorm2d(self.nfeatures * 8)
+            self.bn3 = Identity() if self.gp_enabled else BatchNorm2d(self.nfeatures * 8)
             self.fc1 = Linear(self.fc1_size, 1)
         else:
             self.fc1 = Linear(self.zdim, self.fc1_size)
