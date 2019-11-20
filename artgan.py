@@ -18,7 +18,7 @@ DEFAULT_SETTINGS = {
     'iterations': 1,            # The number of iterations to train on
     'sample_rate': 1,           # The number of iterations in which to report stats
     'ncritic': 5,               # The number of times to train critic per iteration
-    'grad': 10,                 # The gradient penalty for critic
+    'gradient_penalty': 10,     # The gradient penalty for critic
     'learning_rate': 0.0001,    # The learning rate for adam optimizer
     'beta1': 0,                 # The first beta for adam optimizer
     'beta2': 0.9,               # The second beta for adam optimizer
@@ -75,15 +75,27 @@ class GAN():
         for iteration in range(self.S['iterations']):
             batch_real = next(iter(self.dl)).to(self.device)
             batch_latent = torch.normal(0, 1, (self.S["batch_size"], self.S["zdim"])).to(self.device)
-            for i in range(self.S["batch_size"]):
-                x_real = batch_real[i].unsqueeze(0)
-                z = batch_latent[i].unsqueeze(0)
-                e = random.uniform(0, 1)
-                x_fake = self.G(z)
-                x_diff = e * x_real + (1 - e) * x_fake
-                d_real = self.D(x_real)
-                d_fake = self.D(x_fake)
-                d_diff = self.D(x_diff)
+
+            # Training the Critic
+            for _ in range(self.S["ncritic"]):
+                self.D.zero_grad()
+                L = torch.zeros(self.S["batch_size"])
+                for i in range(self.S["batch_size"]):
+                    x_real = batch_real[i].unsqueeze(0)
+                    z = batch_latent[i].unsqueeze(0)
+                    e = random.uniform(0, 1)
+                    x_fake = self.G(z).detach()
+                    x_diff = e * x_real + (1 - e) * x_fake
+                    d_diff = self.D(x_diff)
+                    d_real = self.D(x_real)
+                    d_fake = self.D(x_fake)
+
+                    # Calculate the gradient penalty
+                    x_diff.backward()
+                    penalty = self.S["gradient_penalty"] * torch.square(torch.norm(x_diff.grad) - 1.0)
+                    L[i] = d_fake - d_real + penalty
+                loss = torch.reduce_mean(L)
+                loss.backward()
 
 
     def generate_image(self, n=1):
