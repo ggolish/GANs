@@ -77,32 +77,24 @@ class GAN():
 
         d_optim = Adam(self.D.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
         g_optim = Adam(self.G.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
-
-        for iteration in range(self.S['iterations']):
-            batch_real = next(iter(self.dl)).to(self.device)
-            batch_latent = torch.normal(0, 1, (self.S["batch_size"], self.S["zdim"])).to(self.device)
-
-            # Training the Critic
+        
+        for iteration in tqdm(range(self.S["iterations"])):
             for _ in range(self.S["ncritic"]):
-                self.D.zero_grad()
-                L = torch.zeros(self.S["batch_size"])
-                for i in range(self.S["batch_size"]):
-                    x_real = batch_real[i].unsqueeze(0)
-                    z = batch_latent[i].unsqueeze(0)
-                    e = random.uniform(0, 1)
-                    x_fake = self.G(z).detach()
-                    x_diff = e * x_real + (1 - e) * x_fake
-                    d_diff = self.D(x_diff)
-                    d_real = self.D(x_real)
-                    d_fake = self.D(x_fake)
+                x_batch = next(iter(self.dl)).to(self.device)
+                z_batch = torch.normal(0, 1, (self.S["batch_size"], self.S["zdim"])).to(self.device)
+                self.train_critic(x_batch, z_batch, d_optim)
+            z_batch = torch.normal(0, 1, (self.S["batch_size"], self.S["zdim"])).to(self.device)
+            self.train_generator(z_batch, g_optim)
 
-                    # Calculate the gradient penalty
-                    x_diff.backward()
-                    penalty = self.S["gradient_penalty"] * torch.square(torch.norm(x_diff.grad) - 1.0)
-                    L[i] = d_fake - d_real + penalty
-                loss = torch.reduce_mean(L)
-                loss.backward()
-                d_optim.step()
+    def train_critic(self, x_batch, z_batch, d_optim):
+        self.D.zero_grad()
+        if self.S["gp_enabled"]:
+            pass
+        else:
+            pass
+
+    def train_generator(self, z_batch, g_optim):
+        self.G.zero_grad()
 
     def generate_image(self, n=1):
         z = torch.normal(0, 1, (n, self.S['zdim']))
