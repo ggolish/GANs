@@ -3,10 +3,11 @@ import sys
 import torch
 import random
 from torch.nn import Module
-from torch.optim import Adam
+from torch.optim import Adam, RMSprop
 from architecture.dc import DCGAN
 from loader import ross
 from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 
 DEFAULT_SETTINGS = {
@@ -17,8 +18,9 @@ DEFAULT_SETTINGS = {
     'nchannels': 3,             # The number of color channels in the images
     'nfeatures': 128,           # DCGAN: The starting number of kernals in first layer
     'iterations': 1,            # The number of iterations to train on
-    'sample_rate': 1,           # The number of iterations in which to report stats
+    'sample_interval': 1,       # The number of iterations in which to report stats
     'ncritic': 5,               # The number of times to train critic per iteration
+    'clipping': '0.01',         # The clipping constant for wasserstein distance (gp_enabled == false)
     'gradient_penalty': 10,     # The gradient penalty for critic
     'gp_enabled': False,        # Training with gradient penalty flag
     'learning_rate': 0.0001,    # The learning rate for adam optimizer
@@ -39,6 +41,9 @@ class Critic(Module):
     def forward(self, x):
         return self.arch.forward(x)
 
+    def parameters(self):
+        return self.arch.parameters()
+
    
 class Generator(Module):
     """ Generator network class """
@@ -50,6 +55,9 @@ class Generator(Module):
 
     def forward(self, x):
         return self.arch.forward(x)
+
+    def parameters(self):
+        return self.arch.parameters()
 
 
 class GAN():
@@ -75,8 +83,13 @@ class GAN():
     def train(self):
         """ Train the GAN for a specified number of iterations """
 
-        d_optim = Adam(self.D.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
-        g_optim = Adam(self.G.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+        if self.S["gp_enabled"]:
+            d_optim = Adam(self.D.parameters(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+            g_optim = Adam(self.G.parameters(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+        else:
+            d_optim = RMSprop(self.D.parameters(), lr=self.S["learning_rate"])
+            g_optim = RMSprop(self.G.parameters(), lr=self.S["learning_rate"])
+
         baseline_z = torch.normal(0, 1, (1, self.S["zdim"]))
         
         for iteration in tqdm(range(self.S["iterations"])):
@@ -95,21 +108,35 @@ class GAN():
 
     def train_critic(self, x_batch, z_batch, d_optim):
         self.D.zero_grad()
+        loss = None
         if self.S["gp_enabled"]:
             pass
         else:
-            pass
-        return None
+            y_real = self.D(x_batch)
+            y_fake = self.D(self.G(z_batch).detach())
+            loss = torch.mean(y_fake) - torch.mean(y_real)
+        loss.backward()
+        d_optim.step()
+        if self.S["gp_enabled"]:
+            for p in seld.D.parameters():
+                p.data = torch.clamp(p.data, -self.S["clipping"], self.S["clipping"])
+        return loss
 
     def train_generator(self, z_batch, g_optim):
         self.G.zero_grad()
-        return None
+        y_fake = self.D(self.G(z_batch))
+        loss = -torch.mean(y_fake)
+        loss.backward()
+        g_optim.step()
+        return loss
 
     def generate_image(self, n=1):
         z = torch.normal(0, 1, (n, self.S['zdim']))
         return self.G(z)
 
 if __name__ == '__main__':
-    gan = GAN(ross, {'image_size': 32, 'gp_enabled': True})
+    gan = GAN(ross, {'image_size': 32, 'gp_enabled': False})
+    metrics = next(iter(gan.train()))
+    print(metrics)
 
 
