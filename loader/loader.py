@@ -8,9 +8,9 @@ import numpy as np
 import os
 import sys
 import argparse
-import torch
 import imageio
 import skimage
+from torch.utils.data import DataLoader
 from skimage.transform import resize
 from tqdm import tqdm
 
@@ -21,13 +21,20 @@ else:
     import img_utils
     from downloader import download
 
+class GenericDataset():
 
-def create_loader(data, batch_size=128):
-    return torch.utils.data.DataLoader(
-        data, batch_size=batch_size, shuffle=True)
+    def __init__(self, ds_info):
+        self.ds_info = ds_info
+        self.len = len([f for f in os.listdir(self.ds_info["final_dest"]) if f.endswith(".npy")])
 
+    def __len__(self):
+        return self.len
 
-def load_data(ds_info, optimize=True, verbose=False, imsize=256):
+    def __getitem__(self, i):
+        path = os.path.join(self.ds_info["final_dest"], "{}{:05d}.npy".format(self.ds_info["name"], i))
+        return np.load(path)
+
+def load_data(ds_info, optimize=True, verbose=False, imsize=256, batch_size=128):
 
     if not os.path.exists(ds_info['data_dest']):
         download(ds_info)
@@ -36,16 +43,16 @@ def load_data(ds_info, optimize=True, verbose=False, imsize=256):
         print('Reading image data set...')
 
     if optimize:
-        ds_info['final_dest'] = f'{ds_info["final_dir"]}.{imsize}.optimized.npy'
+        ds_info['final_dest'] = f'{ds_info["final_dir"]}.{imsize}.optimized'
     else:
-        ds_info['final_dest'] = f'{ds_info["final_dir"]}.{imsize}.npy'
-
-    ds_info['final_dest'] = ds_info['final_dest'].format(imsize)
+        ds_info['final_dest'] = f'{ds_info["final_dir"]}.{imsize}'
 
     if not os.path.exists(ds_info['final_dest']):
+        os.mkdir(ds_info["final_dest"])
         files = [f for f in os.listdir(ds_info['final_dir']) if f.endswith('.png') or f.endswith('.jpg')]
-        images = list()
+        count = 0
         for f in tqdm(files, ascii=True):
+            images = []
             path = os.path.join(ds_info['final_dir'], f)
             original = imageio.imread(path)
             img = resize(original, (imsize, imsize, 3), cval=3, preserve_range=True, anti_aliasing=True)
@@ -56,32 +63,24 @@ def load_data(ds_info, optimize=True, verbose=False, imsize=256):
                 images.append(img_utils.southwest(original, imsize))
                 images.append(img_utils.southeast(original, imsize))
                 images.append(img_utils.northeast(original, imsize))
-        imgnpy = np.array(images, dtype='float32')
-
-        # Get the data ready for a pytorch GAN
-        imgnpy = imgnpy / 127.5 - 1.0
-        n, _, _, channels = imgnpy.shape
-        imgnpy = imgnpy.reshape(n, channels, imsize, imsize)
-        np.save(ds_info['final_dest'], imgnpy)
-
-    else:
-        imgnpy = np.load(ds_info['final_dest'])
+            for img in images:
+                store_img(img, count, ds_info)
+                count += 1
 
     if verbose:
         print('Done.')
 
-    return imgnpy
+    return DataLoader(GenericDataset(ds_info), batch_size=batch_size, shuffle=True)
 
+def store_img(img, index, ds_info):
+    imgnpy = np.array(img, dtype='float32')
 
-if __name__ == "__main__":
-    import ross
-    parser = argparse.ArgumentParser(prog='image-loader', description='Utility for loading images')
-    parser.add_argument('-s', '--size', help='Set the size of the images.')
-    args = parser.parse_args(sys.argv[1:])
-    if args.size:
-        try:
-            imsize = int(args.size)
-        except ValueError:
-            sys.stderr.write('Image size must be an integer.\n')
-    print('Testing ross data set')
-    print(ross.load())
+    # Get the data ready for a pytorch GAN
+    imgnpy = imgnpy / 127.5 - 1.0
+    imsize, _, channels = imgnpy.shape
+    imgnpy = imgnpy.reshape(channels, imsize, imsize)
+
+    # Save each image individually
+    dest = os.path.join(ds_info["final_dest"], "{}{:05d}.npy".format(ds_info["name"], index))
+    np.save(dest, imgnpy)
+
