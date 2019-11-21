@@ -3,10 +3,11 @@ import sys
 import torch
 import random
 from torch.nn import Module
-from torch.optim import Adam, RMSProp
+from torch.optim import Adam, RMSprop
 from architecture.dc import DCGAN
 from loader import ross
 from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 
 DEFAULT_SETTINGS = {
@@ -17,7 +18,7 @@ DEFAULT_SETTINGS = {
     'nchannels': 3,             # The number of color channels in the images
     'nfeatures': 128,           # DCGAN: The starting number of kernals in first layer
     'iterations': 1,            # The number of iterations to train on
-    'sample_rate': 1,           # The number of iterations in which to report stats
+    'sample_interval': 1,       # The number of iterations in which to report stats
     'ncritic': 5,               # The number of times to train critic per iteration
     'clipping': '0.01',         # The clipping constant for wasserstein distance (gp_enabled == false)
     'gradient_penalty': 10,     # The gradient penalty for critic
@@ -40,6 +41,9 @@ class Critic(Module):
     def forward(self, x):
         return self.arch.forward(x)
 
+    def parameters(self):
+        return self.arch.parameters()
+
    
 class Generator(Module):
     """ Generator network class """
@@ -51,6 +55,9 @@ class Generator(Module):
 
     def forward(self, x):
         return self.arch.forward(x)
+
+    def parameters(self):
+        return self.arch.parameters()
 
 
 class GAN():
@@ -77,11 +84,11 @@ class GAN():
         """ Train the GAN for a specified number of iterations """
 
         if self.S["gp_enabled"]:
-            d_optim = Adam(self.D.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
-            g_optim = Adam(self.G.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+            d_optim = Adam(self.D.parameters(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+            g_optim = Adam(self.G.parameters(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
         else:
-            d_optim = RMSProp(self.D.params(), lr=self.S["learning_rate"])
-            g_optim = RMSProp(self.G.params(), lr=self.S["learning_rate"])
+            d_optim = RMSprop(self.D.parameters(), lr=self.S["learning_rate"])
+            g_optim = RMSprop(self.G.parameters(), lr=self.S["learning_rate"])
 
         baseline_z = torch.normal(0, 1, (1, self.S["zdim"]))
         
@@ -111,8 +118,8 @@ class GAN():
         loss.backward()
         d_optim.step()
         if self.S["gp_enabled"]:
-            map(lambda p: p.data = torch.clamp(p.data, -self.S["clipping"], self.S["clipping"]), 
-                    self.D.parameters())
+            for p in seld.D.parameters():
+                p.data = torch.clamp(p.data, -self.S["clipping"], self.S["clipping"])
         return loss
 
     def train_generator(self, z_batch, g_optim):
@@ -129,5 +136,7 @@ class GAN():
 
 if __name__ == '__main__':
     gan = GAN(ross, {'image_size': 32, 'gp_enabled': False})
+    metrics = next(iter(gan.train()))
+    print(metrics)
 
 

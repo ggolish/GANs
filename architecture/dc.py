@@ -6,7 +6,7 @@
 
 import math
 import torch
-from torch.nn import Conv2d, ConvTranspose2d, BatchNorm2d, Linear
+from torch.nn import Conv2d, ConvTranspose2d, BatchNorm2d, Linear, Module
 from torch.nn.functional import leaky_relu, relu
 
 if __name__ == "architecture.dc":
@@ -14,10 +14,11 @@ if __name__ == "architecture.dc":
 else:
     from common import Identity
 
-class DCGAN():
+class DCGAN(Module):
     """ Deep Convolutional GAN architecture, for image sizes n s.t. 2^x = n where x is in N^+"""
 
     def __init__(self, is_critic, S):
+        super().__init__()
         self.is_critic = is_critic
         self.nchannels = S['nchannels']
         self.nfeatures = S['nfeatures']
