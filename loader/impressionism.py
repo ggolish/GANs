@@ -23,12 +23,12 @@ ds_info = {
 }
 
 
-def load(optimize=True, imsize=256, batch_size=128, verbose=True):
+def load(optimize=True, imsize=64, batch_size=128, verbose=True):
     global ds_info
     return load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize, batch_size=batch_size)
 
 
-def load_np(optimize=True, imsize=256, batch_size=128, verbose=True, nbatches=1):
+def load_np(optimize=True, imsize=64, batch_size=128, verbose=True, nbatches=1):
     global ds_info
     dl = load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize)
     li = []
