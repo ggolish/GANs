@@ -16,6 +16,7 @@ else:
 ds = 'cubism'
 ds_info = {
     'name': ds,
+    'local_dir': f'/u1/h3/adavenport9/public_html/data/{ds}',
     'data_url': f'http://cs.indstate.edu/~adavenport9/data/wikiart/{ds}.tar.gz',
     'data_dest': f'/tmp/{ds}.tar.gz',
     'final_dir': f'/tmp/{ds}',

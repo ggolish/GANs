@@ -16,6 +16,7 @@ else:
 ds = 'ross-data-resized'
 ds_info = {
     'name': f'{ds}',
+    'local_dir': f'/u1/h3/adavenport9/public_html/data/{ds}',
     'data_url': f'http://cs.indstate.edu/~ggolish/data/{ds}.tar.gz',
     'data_dest': f'/tmp/{ds}.tar.gz',
     'final_dir': f'/tmp/{ds}',
