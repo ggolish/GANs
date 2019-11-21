@@ -3,7 +3,7 @@ import sys
 import torch
 import random
 from torch.nn import Module
-from torch.optim import Adam
+from torch.optim import Adam, RMSProp
 from architecture.dc import DCGAN
 from loader import ross
 from matplotlib import pyplot as plt
@@ -75,8 +75,13 @@ class GAN():
     def train(self):
         """ Train the GAN for a specified number of iterations """
 
-        d_optim = Adam(self.D.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
-        g_optim = Adam(self.G.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+        if self.S["gp_enabled"]:
+            d_optim = Adam(self.D.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+            g_optim = Adam(self.G.params(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+        else:
+            d_optim = RMSProp(self.D.params(), lr=self.S["learning_rate"])
+            g_optim = RMSProp(self.G.params(), lr=self.S["learning_rate"])
+
         baseline_z = torch.normal(0, 1, (1, self.S["zdim"]))
         
         for iteration in tqdm(range(self.S["iterations"])):
