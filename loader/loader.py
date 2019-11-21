@@ -36,7 +36,11 @@ class GenericDataset():
 
 def load_data(ds_info, optimize=True, verbose=False, imsize=256, batch_size=128):
 
-    if not os.path.exists(ds_info['data_dest']):
+    if os.path.exists(ds_info['local_dir']):
+        ds_info['final_dir'] = ds_info['local_dir']
+        print(ds_info['final_dir'])
+
+    elif not os.path.exists(ds_info['data_dest']):
         download(ds_info)
 
     if verbose:
