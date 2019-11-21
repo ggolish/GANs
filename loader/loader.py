@@ -23,18 +23,18 @@ else:
 
 class GenericDataset():
 
-    def __init__(self, ds_info):
+    def __init__(self, ds_info: dict):
         self.ds_info = ds_info
         self.len = len([f for f in os.listdir(self.ds_info["final_dest"]) if f.endswith(".npy")])
 
     def __len__(self):
         return self.len
 
-    def __getitem__(self, i):
+    def __getitem__(self, i: int):
         path = os.path.join(self.ds_info["final_dest"], "{}{:05d}.npy".format(self.ds_info["name"], i))
         return np.load(path)
 
-def load_data(ds_info, optimize=True, verbose=False, imsize=256, batch_size=128):
+def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=256, batch_size:int=128):
 
     if os.path.exists(ds_info['local_dir']):
         ds_info['final_dir'] = ds_info['local_dir']
@@ -76,7 +76,7 @@ def load_data(ds_info, optimize=True, verbose=False, imsize=256, batch_size=128)
 
     return DataLoader(GenericDataset(ds_info), batch_size=batch_size, shuffle=True)
 
-def store_img(img, index, ds_info):
+def store_img(img: np.array, index: int, ds_info: dict):
     imgnpy = np.array(img, dtype='float32')
 
     # Get the data ready for a pytorch GAN
