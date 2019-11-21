@@ -17,15 +17,28 @@
    - [ ] Make gif of images
 
 * Image Visualization
- - [ ] View raw dataset.
+ - [X] View raw dataset.
  - [ ] View generated images.
- - [ ] Animate the images as the network improves.
+ - [ ] Generate images from constant Z as the network trains
  - [X] Replace cv2
+  
+* Training
+ - [ ] Bob ross dataset
+   - [ ] 64 px
+   - [ ] 128 px
+   - [ ] 256 px
+ - [ ] Cubism
+   - [ ] 64 px
+   - [ ] 128 px
+   - [ ] 256 px
 
 * Plotting
  - [ ] Graph losses
  - [ ] Compare image optimizations
  - [ ] Compare dataset sizes
+
+* Bigger
+- [ ] Find a way to load the impressionism dataset
 
 * Web or notebook to display results of project.
  - [ ] Host notebook on web
