@@ -2,10 +2,11 @@
 import sys
 import torch
 import random
+import numpy as np
 from torch.nn import Module
 from torch.optim import Adam, RMSprop
 from architecture.dc import DCGAN
-from loader import ross
+from loader import ross, cifar
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
@@ -97,14 +98,15 @@ class GAN():
             for _ in range(self.S["ncritic"]):
                 x_batch = next(iter(self.dl)).to(self.device)
                 z_batch = torch.normal(0, 1, (self.S["batch_size"], self.S["zdim"])).to(self.device)
-                d_losses.append(self.train_critic(x_batch, z_batch, d_optim))
+                curr_loss = self.train_critic(x_batch, z_batch, d_optim)
+                d_losses.append(curr_loss.item())
             z_batch = torch.normal(0, 1, (self.S["batch_size"], self.S["zdim"])).to(self.device)
-            g_loss = self.train_generator(z_batch, g_optim)
+            g_loss = self.train_generator(z_batch, g_optim).item()
             
             if iteration % self.S["sample_interval"] == 0:
                 with torch.no_grad():
                     img = 127.5 * self.G(baseline_z).permute(0, 2, 3, 1).numpy() + 127.5
-                yield {"d_losses": d_losses, "g_loss": g_loss, "img": img.astype("int16")}
+                yield {"d_losses": np.array(d_losses), "g_loss": g_loss, "img": img.astype("int16")}
 
     def train_critic(self, x_batch, z_batch, d_optim):
         self.D.zero_grad()
@@ -135,8 +137,12 @@ class GAN():
         return self.G(z)
 
 if __name__ == '__main__':
-    gan = GAN(ross, {'image_size': 32, 'gp_enabled': False})
-    metrics = next(iter(gan.train()))
-    print(metrics)
+    gan = GAN(cifar, {
+        'image_size': 32, 
+        'nchannels': 3,
+        'iterations': 1,
+        'sample_interval': 1
+    })
+        
 
 
