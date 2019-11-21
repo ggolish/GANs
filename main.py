@@ -3,8 +3,10 @@
 
 import torch
 import argparse
+from image_viewer.view_dataset import show_images
 from loader import ross
 from loader import cubism
+from loader import impressionism
 
 
 if __name__ == '__main__':
@@ -20,6 +22,8 @@ if __name__ == '__main__':
     if args.dataset:
         if args.dataset == 'cubism':
             ds = cubism
+        elif args.dataset == 'impressionism':
+            ds = impressionism
 
     """ Choosing image size """
     if args.size:
@@ -30,3 +34,4 @@ if __name__ == '__main__':
     dataset = ds.load(imsize=size)
     batch = next(iter(dataset))
     print(batch.shape, torch.min(batch), torch.max(batch))
+    show_images(batch.numpy(), 5, 5)
