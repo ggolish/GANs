@@ -19,6 +19,7 @@ DEFAULT_SETTINGS = {
     'iterations': 1,            # The number of iterations to train on
     'sample_rate': 1,           # The number of iterations in which to report stats
     'ncritic': 5,               # The number of times to train critic per iteration
+    'clipping': '0.01',         # The clipping constant for wasserstein distance (gp_enabled == false)
     'gradient_penalty': 10,     # The gradient penalty for critic
     'gp_enabled': False,        # Training with gradient penalty flag
     'learning_rate': 0.0001,    # The learning rate for adam optimizer
@@ -100,21 +101,33 @@ class GAN():
 
     def train_critic(self, x_batch, z_batch, d_optim):
         self.D.zero_grad()
+        loss = None
         if self.S["gp_enabled"]:
             pass
         else:
-            pass
-        return None
+            y_real = self.D(x_batch)
+            y_fake = self.D(self.G(z_batch).detach())
+            loss = torch.mean(y_fake) - torch.mean(y_real)
+        loss.backward()
+        d_optim.step()
+        if self.S["gp_enabled"]:
+            map(lambda p: p.data = torch.clamp(p.data, -self.S["clipping"], self.S["clipping"]), 
+                    self.D.parameters())
+        return loss
 
     def train_generator(self, z_batch, g_optim):
         self.G.zero_grad()
-        return None
+        y_fake = self.D(self.G(z_batch))
+        loss = -torch.mean(y_fake)
+        loss.backward()
+        g_optim.step()
+        return loss
 
     def generate_image(self, n=1):
         z = torch.normal(0, 1, (n, self.S['zdim']))
         return self.G(z)
 
 if __name__ == '__main__':
-    gan = GAN(ross, {'image_size': 32, 'gp_enabled': True})
+    gan = GAN(ross, {'image_size': 32, 'gp_enabled': False})
 
 
