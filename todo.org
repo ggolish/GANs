@@ -1,47 +1,50 @@
 #+TITLE: Every Network Needs a Friend
 
+* Refactor
+ - [ ] Gotta add those type hints
+
 * Architecture
-  - [ ] Implment archituctures for MLPGAN, DCGAN, and ResNetGAN
-  - [ ] Run training on each type of architecture for comparison
+ - [ ] Implment archituctures for MLPGAN, DCGAN, and ResNetGAN
+ - [ ] Run training on each type of architecture for comparison
 
 * Parallelization
-  - [ ] Investigate PyTorch's method of parallelization
-  - [ ] Parallel training on cubism data set
+ - [ ] Investigate PyTorch's method of parallelization
+ - [ ] Parallel training on cubism data set
 
 * Saving
- - [ ] Network saving
- - [ ] Network loading
- - [ ] Save checkpoints
- - [ ] Images
-   - [ ] Save generated images
-   - [ ] Make gif of images
+- [ ] Network saving
+- [ ] Network loading
+- [ ] Save checkpoints
+- [ ] Images
+  - [ ] Save generated images
+  - [ ] Make gif of images
 
 * Image Visualization
- - [X] View raw dataset.
- - [ ] View generated images.
- - [ ] Generate images from constant Z as the network trains
- - [X] Replace cv2
+- [X] View raw dataset.
+- [ ] View generated images.
+- [ ] Generate images from constant Z as the network trains
+- [X] Replace cv2
   
 * Training
- - [ ] Bob ross dataset
-   - [ ] 64 px
-   - [ ] 128 px
-   - [ ] 256 px
- - [ ] Cubism
-   - [ ] 64 px
-   - [ ] 128 px
-   - [ ] 256 px
+- [ ] Bob ross dataset
+  - [ ] 64 px
+  - [ ] 128 px
+  - [ ] 256 px
+- [ ] Cubism
+  - [ ] 64 px
+  - [ ] 128 px
+  - [ ] 256 px
 
 * Plotting
- - [ ] Graph losses
- - [ ] Compare image optimizations
- - [ ] Compare dataset sizes
+- [ ] Graph losses
+- [ ] Compare image optimizations
+- [ ] Compare dataset sizes
 
 * Bigger
 - [ ] Find a way to load the impressionism dataset
 
 * Web or notebook to display results of project.
- - [ ] Host notebook on web
+- [ ] Host notebook on web
  
 * Get Gage to Use Doom
- - [ ] DOOM
+- [ ] DOOM
