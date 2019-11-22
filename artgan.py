@@ -22,7 +22,7 @@ DEFAULT_SETTINGS = {
     'iterations': 1,            # The number of iterations to train on
     'sample_interval': 1,       # The number of iterations in which to report stats
     'ncritic': 5,               # The number of times to train critic per iteration
-    'clipping': '0.01',         # The clipping constant for wasserstein distance (gp_enabled == false)
+    'clipping': 0.01,           # The clipping constant for wasserstein distance (gp_enabled == false)
     'gradient_penalty': 10,     # The gradient penalty for critic
     'gp_enabled': False,        # Training with gradient penalty flag
     'learning_rate': 0.0001,    # The learning rate for adam optimizer
@@ -154,7 +154,8 @@ if __name__ == '__main__':
         'image_size': 32, 
         'nchannels': 3,
         'iterations': 500,
-        'sample_interval': 50
+        'sample_interval': 50,
+        'learning_rate': 0.00005
     })
 
     trainer.train(gan, "cifar-test")
