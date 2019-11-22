@@ -49,7 +49,7 @@ def load_results(name: str, dest:str="results"):
     with open(results_dest, "rb") as fd:
         results = pickle.load(fd)
 
-    gan = artgan.GAN(settings)
+    gan = artgan.GAN(None, settings)
     pt = torch.load(gan_dest)
     gan.D.arch.load_state_dict(pt["critic_state_dict"])
     gan.G.arch.load_state_dict(pt["generator_state_dict"])

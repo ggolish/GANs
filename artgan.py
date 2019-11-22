@@ -80,10 +80,16 @@ class GAN():
         self.device = torch.device(self.S["device"])
         self.D = Critic(self.S).to(self.device)
         self.G = Generator(self.S).to(self.device)
-        self.dl = dataset.load(batch_size=self.S["batch_size"], imsize=self.S["image_size"])
+        self.gen_mode = (dataset == None)
+        if not self.gen_mode:
+            self.dl = dataset.load(batch_size=self.S["batch_size"], imsize=self.S["image_size"])
 
     def train(self):
         """ Train the GAN for a specified number of iterations """
+
+        if self.gen_mode:
+            sys.stderr.write("Error: GAN loaded in generate mode, cannot train.")
+            return 
 
         if self.S["gp_enabled"]:
             d_optim = Adam(self.D.parameters(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
@@ -110,6 +116,9 @@ class GAN():
                 yield {"d_losses": np.array(d_losses), "g_loss": g_loss, "img": img.astype("int16")}
 
     def train_critic(self, x_batch, z_batch, d_optim):
+        if self.gen_mode:
+            sys.stderr.write("Error: GAN loaded in generate mode, cannot train.")
+            return 
         self.D.zero_grad()
         loss = None
         if self.S["gp_enabled"]:
@@ -126,6 +135,9 @@ class GAN():
         return loss
 
     def train_generator(self, z_batch, g_optim):
+        if self.gen_mode:
+            sys.stderr.write("Error: GAN loaded in generate mode, cannot train.")
+            return 
         self.G.zero_grad()
         y_fake = self.D(self.G(z_batch))
         loss = -torch.mean(y_fake)
