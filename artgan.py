@@ -3,6 +3,7 @@ import sys
 import torch
 import random
 import numpy as np
+import trainer
 from torch.nn import Module
 from torch.optim import Adam, RMSprop
 from architecture.dc import DCGAN
@@ -93,7 +94,7 @@ class GAN():
 
         baseline_z = torch.normal(0, 1, (1, self.S["zdim"]))
         
-        for iteration in tqdm(range(self.S["iterations"])):
+        for iteration in tqdm(range(self.S["iterations"]), ascii=True):
             d_losses = []
             for _ in range(self.S["ncritic"]):
                 x_batch = next(iter(self.dl)).to(self.device)
@@ -140,9 +141,9 @@ if __name__ == '__main__':
     gan = GAN(cifar, {
         'image_size': 32, 
         'nchannels': 3,
-        'iterations': 1,
-        'sample_interval': 1
+        'iterations': 500,
+        'sample_interval': 50
     })
-        
 
+    trainer.train(gan, "cifar-test")
 
