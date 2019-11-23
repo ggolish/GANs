@@ -41,7 +41,7 @@
 - [ ] Compare dataset sizes
 
 * Bigger
-- [ ] Find a way to load the impressionism dataset
+- [X] Find a way to load the impressionism dataset
 
 * Web or notebook to display results of project.
 - [ ] Host notebook on web
