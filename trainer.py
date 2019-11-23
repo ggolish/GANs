@@ -62,8 +62,8 @@ def display_images(results: dict, rows: int, cols: int):
     if rows * cols != len(results['images']):
         sys.stderr.write("Error: invalid number of rows and columns.\n")
         return
-    imsize = results['images'][0].shape(1)
-    channels = results['images'][0].shape(3)
+    imsize = results['images'][0].shape[1]
+    channels = results['images'][0].shape[3]
     a = np.array([img[0] for img in results['images']])
     a = a.reshape(rows, cols, imsize, imsize, channels)
     a = a.swapaxes(1, 2)
