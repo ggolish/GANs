@@ -24,8 +24,14 @@ def load(class_type="cat", optimize=True, imsize=32, batch_size=128, verbose=Tru
     if imsize != 32:
         sys.stderr.write("Warning: CIFAR10 dataset only compatible with imsize 32!\n")
     ds = torchvision.datasets.CIFAR10("/tmp", train=False, download=True)
+
+    # print(ds)
+    # import pprint
+    # print(vars(ds))
+
+
     indeces = [i for i in range(len(ds)) if ds[i][1] == classes[class_type]]
-    imgs = ((ds.data[indeces] - 127.5) / 127.5).reshape(1000, 3, 32, 32)
+    imgs = ((ds.test_data[indeces] - 127.5) / 127.5).reshape(1000, 3, 32, 32)
     return DataLoader(imgs.astype("float32"), batch_size=batch_size, shuffle=True)
 
 if __name__ == "__main__":
