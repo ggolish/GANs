@@ -44,9 +44,7 @@ def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=
         print('Reading image data set...')
 
     if optimize:
-        ds_info['final_dest'] = f'{ds_info["final_dir"]}.{imsize}.optimized'
-    else:
-        ds_info['final_dest'] = f'{ds_info["final_dir"]}.{imsize}'
+        ds_info['final_dest'] += '.optimized'
 
     if not os.path.exists(ds_info['final_dest']):
         os.mkdir(ds_info["final_dest"])
@@ -62,10 +60,6 @@ def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=
             for img in images:
                 store_img(img, count, ds_info)
                 count += 1
-    # else:
-    #     files = [f for f in os.listdir(ds_info['final_dest']) if f.endswith('.npy')]
-    #     for f in tqdm(files, ascii=True):
-    #         print(f)
     if verbose:
         print('Done.')
 
