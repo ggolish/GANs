@@ -42,11 +42,8 @@ class Critic(Module):
 
     def forward(self, x):
         return self.arch.forward(x)
-
-    def parameters(self):
-        return self.arch.parameters()
-
    
+
 class Generator(Module):
     """ Generator network class """
 
@@ -57,9 +54,6 @@ class Generator(Module):
 
     def forward(self, x):
         return self.arch.forward(x)
-
-    def parameters(self):
-        return self.arch.parameters()
 
 
 class GAN():
@@ -129,8 +123,8 @@ class GAN():
             loss = torch.mean(y_fake) - torch.mean(y_real)
         loss.backward()
         d_optim.step()
-        if self.S["gp_enabled"]:
-            for p in seld.D.parameters():
+        if not self.S["gp_enabled"]:
+            for p in self.D.parameters():
                 p.data = torch.clamp(p.data, -self.S["clipping"], self.S["clipping"])
         return loss
 
@@ -153,9 +147,11 @@ if __name__ == '__main__':
     gan = GAN(cifar, {
         'image_size': 32, 
         'nchannels': 3,
-        'iterations': 500,
-        'sample_interval': 50,
-        'learning_rate': 0.00005
+        'iterations': 1000,
+        'sample_interval': 20,
+        'learning_rate': 0.0001,
+        'nfeatures': 64,
+        'batch_size': 128
     })
 
     trainer.train(gan, "cifar-test")
