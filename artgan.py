@@ -155,6 +155,4 @@ if __name__ == '__main__':
     })
 
     trainer.train(gan, "cifar-test")
-    res, _ = trainer.load_results("cifar-test")
-    trainer.display_images(res, 10, 5)
 
