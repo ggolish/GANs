@@ -72,3 +72,11 @@ def display_images(results: dict, rows: int, cols: int):
     plt.axis('off')
     plt.show()
     
+def explore_hyperparam(param: str, values: iter, name:str="gan", settings:dict={}):
+    for value in values:
+        print(f"Training with {param} = {value}.")
+        settings[param] = value
+        gan = artgan.GAN(settings)
+        curr_name = f"{name}-{param}-{value}"
+        train(gan, curr_name)
+        

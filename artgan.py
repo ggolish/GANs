@@ -7,12 +7,13 @@ import trainer
 from torch.nn import Module
 from torch.optim import Adam, RMSprop
 from architecture.dc import DCGAN
-from loader import ross, cifar
+from loader import load_dataset
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
 
 DEFAULT_SETTINGS = {
+    'dataset': 'ross',          # The dataset for the gan to use during training
     'critic_arch': DCGAN,       # The base architucture of the critic
     'generator_arch': DCGAN,    # The base architucture of the generator
     'batch_size': 128,          # The size of each batch during training
@@ -60,7 +61,7 @@ class GAN():
     """
         Generalized GAN class
     """
-    def __init__(self, dataset, settings={}):
+    def __init__(self, settings={}):
         self.S = DEFAULT_SETTINGS
         for k, v in settings.items():
             if k in self.S:
@@ -74,9 +75,9 @@ class GAN():
         self.device = torch.device(self.S["device"])
         self.D = Critic(self.S).to(self.device)
         self.G = Generator(self.S).to(self.device)
-        self.gen_mode = (dataset == None)
+        self.gen_mode = (self.S['dataset'] == None)
         if not self.gen_mode:
-            self.dl = dataset.load(batch_size=self.S["batch_size"], imsize=self.S["image_size"])
+            self.dl = load_dataset(self.S["dataset"], batch_size=self.S["batch_size"], imsize=self.S["image_size"])
 
     def train(self):
         """ Train the GAN for a specified number of iterations """
@@ -144,15 +145,16 @@ class GAN():
         return self.G(z)
 
 if __name__ == '__main__':
-    gan = GAN(cifar, {
+    settings = {
+        'dataset': 'cifar',
         'image_size': 32, 
         'nchannels': 3,
         'iterations': 1000,
         'sample_interval': 20,
-        'learning_rate': 0.0001,
+        'learning_rate': 0.00005,
         'nfeatures': 64,
-        'batch_size': 128
-    })
+        'batch_size': 64,
+    }
 
-    trainer.train(gan, "cifar-test")
+    trainer.explore_hyperparam('clipping', np.arange(0.01, 0.11, 0.01), settings=settings)
 
