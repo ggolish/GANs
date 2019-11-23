@@ -29,8 +29,6 @@ def load(optimize=True, imsize=64, batch_size=128, verbose=True):
     # Add the image size to the dataset
     for k, v in ds_info.items():
         ds_info[k] = v.replace(ds, f'{ds}.{imsize}')
-    from pprint import pprint
-    pprint(ds_info)
     return load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize, batch_size=batch_size)
 
 
