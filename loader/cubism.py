@@ -42,4 +42,4 @@ def load_np(optimize=True, imsize=64, batch_size=128, verbose=True, nbatches=1):
 
 
 if __name__ == '__main__':
-    load(optimize=False)
+    print(load(optimize=False))
