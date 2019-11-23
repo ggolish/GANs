@@ -7,10 +7,10 @@ import numpy as np
 
 if __name__ == 'loader.ross':
     from . import downloader
-    from .loader import load_data
+    from .loader import load_data, format_info
 else:
     import downloader
-    from loader import load_data
+    from .loader import load_data, format_info
 
 
 ds = 'ross-data-resized'
@@ -26,6 +26,7 @@ ds_info = {
 
 def load(optimize=True, imsize=256, batch_size=128, verbose=True):
     global ds_info
+    ds_info = format_info(ds_info, ds, imsize)
     return load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize, batch_size=batch_size)
 
 
