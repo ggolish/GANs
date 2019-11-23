@@ -20,7 +20,7 @@ ds_info = {
     'data_url': f'http://cs.indstate.edu/~adavenport9/data/{ds}.tar.gz',
     'data_dest': f'/tmp/{ds}.tar.gz',
     'final_dir': f'/tmp/{ds}',
-    'final_dest': f'/tmp/{ds}.npy'
+    'final_dest': f'/tmp/{ds}.numpy'
 }
 
 
