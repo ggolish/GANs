@@ -62,24 +62,30 @@ def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=
             for img in images:
                 store_img(img, count, ds_info)
                 count += 1
-    else:
-        files = [f for f in os.listdir(ds_info['final_dest']) if f.endswith('.npy')]
-        for f in tqdm(files, ascii=True):
-            print(f)
+    # else:
+    #     files = [f for f in os.listdir(ds_info['final_dest']) if f.endswith('.npy')]
+    #     for f in tqdm(files, ascii=True):
+    #         print(f)
     if verbose:
         print('Done.')
+
+    print(len(GenericDataset(ds_info)))
 
     return DataLoader(GenericDataset(ds_info), batch_size=batch_size, shuffle=True)
 
 def store_img(img: np.array, index: int, ds_info: dict):
-    imgnpy = np.array(img, dtype='float32')
+    # Some images may not be in the correct shape (probably black and white)
+    try:
+        imgnpy = np.array(img, dtype='float32')
 
-    # Get the data ready for a pytorch GAN
-    imgnpy = imgnpy / 127.5 - 1.0
-    imsize, _, channels = imgnpy.shape
-    imgnpy = imgnpy.reshape(channels, imsize, imsize)
+        # Get the data ready for a pytorch GAN
+        imgnpy = imgnpy / 127.5 - 1.0
+        imsize, _, channels = imgnpy.shape
+        imgnpy = imgnpy.reshape(channels, imsize, imsize)
 
-    # Save each image individually
-    dest = os.path.join(ds_info["final_dest"], "{}{:05d}.npy".format(ds_info["name"], index))
-    np.save(dest, imgnpy)
+        # Save each image individually
+        dest = os.path.join(ds_info["final_dest"], "{}{:05d}.npy".format(ds_info["name"], index))
+        np.save(dest, imgnpy)
 
+    except ValueError:
+        print('Image with bad shape')
