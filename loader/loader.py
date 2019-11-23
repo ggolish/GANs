@@ -9,16 +9,12 @@ import os
 import sys
 import argparse
 import imageio
-import skimage
 from torch.utils.data import DataLoader
-from skimage.transform import resize
 from tqdm import tqdm
 
 if __name__ == "loader.loader":
-    from . import img_utils
     from .downloader import download
 else:
-    import img_utils
     from downloader import download
 
 class GenericDataset():
@@ -35,7 +31,8 @@ class GenericDataset():
         return np.load(path)
 
 def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=256, batch_size:int=128):
-
+    
+    # If the dataset is local, don't bother downloading it
     if os.path.exists(ds_info['local_dir']):
         ds_info['final_dir'] = ds_info['local_dir']
         print(ds_info['final_dir'])
@@ -58,19 +55,17 @@ def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=
         for f in tqdm(files, ascii=True):
             images = []
             path = os.path.join(ds_info['final_dir'], f)
-            original = imageio.imread(path)
-            img = resize(original, (imsize, imsize, 3), cval=3, preserve_range=True, anti_aliasing=True)
+            img = imageio.imread(path)
             images.append(img)
             if optimize:
                 images.append(np.flip(img, 1))
-                images.append(img_utils.northwest(original, imsize))
-                images.append(img_utils.southwest(original, imsize))
-                images.append(img_utils.southeast(original, imsize))
-                images.append(img_utils.northeast(original, imsize))
             for img in images:
                 store_img(img, count, ds_info)
                 count += 1
-
+    else:
+        files = [f for f in os.listdir(ds_info['final_dest']) if f.endswith('.npy')]
+        for f in tqdm(files, ascii=True):
+            print(f)
     if verbose:
         print('Done.')
 

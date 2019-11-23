@@ -39,4 +39,5 @@ def load_np(optimize=True, imsize=256, batch_size=128, verbose=True, nbatches=1)
 
 
 if __name__ == '__main__':
+    print('main')
     load()
