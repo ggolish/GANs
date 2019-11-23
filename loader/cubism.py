@@ -8,10 +8,10 @@ import numpy as np
 
 if __name__ == 'loader.cubism':
     from . import downloader
-    from .loader import load_data
+    from .loader import load_data, format_info
 else:
     import downloader
-    from loader import load_data
+    from loader import load_data, format_info
 
 ds = 'cubism'
 ds_info = {
@@ -26,9 +26,6 @@ ds_info = {
 
 def load(optimize=True, imsize=64, batch_size=128, verbose=True):
     global ds_info
-    # Add the image size to the dataset
-    for k, v in ds_info.items():
-        ds_info[k] = v.replace(ds, f'{ds}.{imsize}')
     return load_data(ds_info, optimize=optimize, verbose=True, imsize=imsize, batch_size=batch_size)
 
 

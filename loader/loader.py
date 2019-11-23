@@ -30,6 +30,13 @@ class GenericDataset():
         path = os.path.join(self.ds_info["final_dest"], "{}{:05d}.npy".format(self.ds_info["name"], i))
         return np.load(path)
 
+   
+def format_info(ds_info: dict, ds: str, imsize: int):
+    # Add the image size to the dataset
+    for k, v in ds_info.items():
+        ds_info[k] = v.replace(ds, f'{ds}.{imsize}')
+
+
 def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=256, batch_size:int=128):
     
     # If the dataset is local, don't bother downloading it
@@ -47,7 +54,7 @@ def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=
         ds_info['final_dest'] += '.optimized'
 
     if not os.path.exists(ds_info['final_dest']):
-        os.mkdir(ds_info["final_dest"])
+        os.mkdir(ds_info['final_dest'])
         files = [f for f in os.listdir(ds_info['final_dir']) if f.endswith('.png') or f.endswith('.jpg')]
         count = 0
         for f in tqdm(files, ascii=True):
