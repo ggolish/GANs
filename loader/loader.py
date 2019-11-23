@@ -35,6 +35,7 @@ def format_info(ds_info: dict, ds: str, imsize: int):
     # Add the image size to the dataset
     for k, v in ds_info.items():
         ds_info[k] = v.replace(ds, f'{ds}.{imsize}')
+    return ds_info
 
 
 def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=256, batch_size:int=128):
