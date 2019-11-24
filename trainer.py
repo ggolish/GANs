@@ -51,7 +51,7 @@ def load_results(name: str, dest:str="results"):
     with open(results_dest, "rb") as fd:
         results = pickle.load(fd)
 
-    gan = artgan.GAN(None, settings)
+    gan = artgan.GAN(settings)
     pt = torch.load(gan_dest)
     gan.D.arch.load_state_dict(pt["critic_state_dict"])
     gan.G.arch.load_state_dict(pt["generator_state_dict"])
@@ -61,6 +61,7 @@ def load_results(name: str, dest:str="results"):
 def display_images(results: dict, rows: int, cols: int):
     if rows * cols != len(results['images']):
         sys.stderr.write("Error: invalid number of rows and columns.\n")
+        sys.stderr.write(f'{len(results["images"])}\n')
         return
     imsize = results['images'][0].shape[1]
     channels = results['images'][0].shape[3]
