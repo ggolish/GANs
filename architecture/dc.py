@@ -78,8 +78,56 @@ class CriticArchitecture(Module):
 class GeneratorArchitecture(Module):
     ''' Standard DCGAN generator architecture (base 2 images sizes only) '''
 
-    def __init__(self, settings: dict):
+    def __init__(self, settings: dict, debug=False):
         super().__init__()
+
+        # Store necessary parameters from parent GAN
+        self.zdim = settings['zdim']
+        self.nfeatures = settings['nfeatures']
+        self.nchannels = settings['nchannels']
+        self.imsize = settings['image_size']
+        self.debug = debug
+
+        # Ensure image is a power of 2
+        if not isbase2(self.imsize):
+            raise Exception(
+                f"Invalid image size for DCGAN generator: {self.imsize}")
+
+        # Build appropriate number of layers
+        self.layers = []
+        p = int(math.log2(self.imsize))
+        mult = 2**(p - 1)
+        for i in range(p - 2):
+            s = 1 if i == 0 else 2
+            pad = 0 if i == 0 else 1
+            dim = self.zdim if i == 0 else (self.nfeatures * mult)
+            conv2d = ConvTranspose2d(
+                int(dim), int(self.nfeatures * mult / 2), 4, s, pad, bias=False)
+            bn = BatchNorm2d(int(self.nfeatures * mult / 2))
+            activation = ReLU(True)
+            self.layers.extend([conv2d, bn, activation])
+            mult /= 2
+        conv2d = ConvTranspose2d(
+            int(self.nfeatures * mult), self.nchannels, 4, 2, 1, bias=False)
+        activation = Tanh()
+        self.layers.extend([conv2d, activation])
+
+        # Ensure parameters are accessible
+        for i, layer in enumerate(self.layers):
+            self.add_module(f'layer{i}', layer)
+
+    def forward(self, x):
+        if self.debug:
+            print("DCGAN Generator Forward Method:\n")
+        for layer in self.layers:
+            if self.debug:
+                print(layer)
+                print(x.shape, '=>', end=' ')
+            x = layer(x)
+            if self.debug:
+                print(x.shape)
+                print()
+        return x
 
 
 def isbase2(x):
@@ -90,13 +138,14 @@ def isbase2(x):
 
 if __name__ == "__main__":
 
-    d = CriticArchitecture({
+    g = GeneratorArchitecture({
         'gp_enabled': True,
-        'image_size': 64,
+        'image_size': 32,
         'nchannels': 3,
-        'nfeatures': 128
+        'nfeatures': 128,
+        'zdim': 100
     }, debug=True)
 
     with torch.no_grad():
-        x = torch.randn(128, 3, 64, 64)
-        d(x)
+        z = torch.randn(128, 100, 1, 1)
+        g(z)
