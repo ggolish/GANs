@@ -40,9 +40,10 @@ class Critic(Module):
         super().__init__()
         self.arch = S["critic_arch"](True, S)
         self.S = S
+        self.device = torch.device(self.S["device"])
 
     def forward(self, x):
-        return self.arch.forward(x)
+        return self.arch.forward(x.to(self.device))
    
 
 class Generator(Module):
@@ -52,9 +53,11 @@ class Generator(Module):
         super().__init__()
         self.arch = S["generator_arch"](False, S)
         self.S = S
+        # We have to set the device on the Critic and Generator as well
+        self.device = torch.device(self.S["device"])
 
     def forward(self, x):
-        return self.arch.forward(x)
+        return self.arch.forward(x.to(self.device))
 
 
 class GAN():
@@ -73,8 +76,11 @@ class GAN():
             sys.stderr.write("Warning: Device set to cuda, cuda not available.\n")
 
         self.device = torch.device(self.S["device"])
+        print(f"DEVICE: {self.device}")
         self.D = Critic(self.S).to(self.device)
+        # self.D.arch = self.D.arch.to(self.device)
         self.G = Generator(self.S).to(self.device)
+        # self.G.arch = self.G.arch.to(self.device)
         self.gen_mode = (self.S['dataset'] == None)
         if not self.gen_mode:
             self.dl = load_dataset(self.S["dataset"], batch_size=self.S["batch_size"], imsize=self.S["image_size"])
@@ -107,8 +113,9 @@ class GAN():
             
             if iteration % self.S["sample_interval"] == 0:
                 with torch.no_grad():
-                    img = self.G(baseline_z).numpy()[0]
-                yield {"d_losses": np.array(d_losses), "g_loss": g_loss, "img": img}
+                    # To convert to numpy we have to move the tensor back to the cpu
+                    img = 127.5 * self.G(baseline_z).to('cpu').permute(0, 2, 3, 1).numpy() + 127.5
+                yield {"d_losses": np.array(d_losses), "g_loss": g_loss, "img": img.astype("int16")}
 
     def train_critic(self, x_batch, z_batch, d_optim):
         if self.gen_mode:
@@ -154,9 +161,18 @@ if __name__ == '__main__':
         'learning_rate': 0.00001,
         'nfeatures': 128,
         'batch_size': 64,
-        'clipping': 0.01
-    })
-    trainer.train(gan, "cifar-test")
-    res, _ = trainer.load_results("cifar-test")
-    trainer.display_images(res, 1, 5)
+        'device': 'cuda'
+    }
+
+    # trainer.explore_hyperparam('clipping', np.arange(0.01, 0.11, 0.01), settings=settings)
+    results, gan = trainer.load_results('gan-clipping-0.01')
+    trainer.display_images(results, 5, 10)
+    results, gan = trainer.load_results('gan-clipping-0.02')
+    trainer.display_images(results, 5, 10)
+    results, gan = trainer.load_results('gan-clipping-0.03')
+    trainer.display_images(results, 5, 10)
+    results, gan = trainer.load_results('gan-clipping-0.04')
+    trainer.display_images(results, 5, 10)
+    results, gan = trainer.load_results('gan-clipping-0.05')
+    trainer.display_images(results, 5, 10)
 

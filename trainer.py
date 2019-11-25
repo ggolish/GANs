@@ -74,6 +74,7 @@ def load_results(name: str, dest:str="results"):
 def display_images(results: dict, rows: int, cols: int):
     if rows * cols != len(results['images']):
         sys.stderr.write("Error: invalid number of rows and columns.\n")
+        sys.stderr.write(f'{len(results["images"])}\n')
         return
     imsize = results['images'].shape[1]
     channels = results['images'].shape[3]
