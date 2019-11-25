@@ -35,10 +35,11 @@ class CriticArchitecture(Module):
         for i in range(int(math.log2(self.imsize)) - 3):
             conv2d = Conv2d(self.nfeatures * mult,
                             self.nfeatures * mult * 2, 4, 2, 1, bias=False)
-            bn = BatchNorm2d(self.nfeatures * mult * 2)
-            activation = LeakyReLU(0.02, inplace=True)
             self.layers.append(conv2d)
-            self.layers.append(bn)
+            if not self.gp_enabled:
+                bn = BatchNorm2d(self.nfeatures * mult * 2)
+                self.layers.append(bn)
+            activation = LeakyReLU(0.02, inplace=True)
             self.layers.append(activation)
             mult *= 2
         conv2d = Conv2d(self.nfeatures * mult, self.nfeatures *
@@ -90,8 +91,8 @@ def isbase2(x):
 if __name__ == "__main__":
 
     d = CriticArchitecture({
-        'gp_enabled': False,
-        'image_size': 28,
+        'gp_enabled': True,
+        'image_size': 64,
         'nchannels': 3,
         'nfeatures': 128
     }, debug=True)
