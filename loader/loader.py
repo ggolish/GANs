@@ -82,8 +82,7 @@ def store_img(img: np.array, index: int, ds_info: dict):
 
         # Get the data ready for a pytorch GAN
         imgnpy = imgnpy / 127.5 - 1.0
-        imsize, _, channels = imgnpy.shape
-        imgnpy = imgnpy.reshape(channels, imsize, imsize)
+        imgnpy = np.transpose(imgnpy, (2, 0, 1))
 
         # Save each image individually
         dest = os.path.join(ds_info["final_dest"], "{}{:05d}.npy".format(ds_info["name"], index))

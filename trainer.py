@@ -14,12 +14,22 @@ def train(gan: artgan.GAN, name: str, dest:str="results"):
     
     results = {"d_losses": [], "g_losses": [], "images": []}
 
-    for metrics in gan.train():
-        results["d_losses"].append(np.mean(metrics["d_losses"]))
-        results["g_losses"].append(metrics["g_loss"])
-        results["images"].append(metrics["img"])
+    try:
+        for metrics in gan.train():
+            results["d_losses"].append(np.mean(metrics["d_losses"]))
+            results["g_losses"].append(metrics["g_loss"])
+            results["images"].append(metrics["img"])
+    except KeyboardInterrupt:
+        print("Storing results.")
+        store_results(results, gan, name, dest=dest)
+        sys.exit(0)
 
     store_results(results, gan, name, dest=dest)
+
+
+def clean_images(imgs):
+    a = 127.5 * np.transpose(imgs, (0, 2, 3, 1)) + 127.5
+    return a.astype("int16")
 
 def store_results(results: dict, gan: artgan.GAN, name: str, dest:str="results"):
     dest = os.path.join(dest, name)
@@ -36,6 +46,8 @@ def store_results(results: dict, gan: artgan.GAN, name: str, dest:str="results")
     with open(settings_dest, "wb") as fd:
         pickle.dump(gan.S, fd)
 
+    results["images"] = np.array(results["images"])
+    results["images"] = clean_images(results["images"])
     with open(results_dest, "wb") as fd:
         pickle.dump(results, fd)
     
@@ -63,13 +75,12 @@ def display_images(results: dict, rows: int, cols: int):
     if rows * cols != len(results['images']):
         sys.stderr.write("Error: invalid number of rows and columns.\n")
         return
-    imsize = results['images'][0].shape[1]
-    channels = results['images'][0].shape[3]
-    a = np.array([img[0] for img in results['images']])
-    a = a.reshape(rows, cols, imsize, imsize, channels)
+    imsize = results['images'].shape[1]
+    channels = results['images'].shape[3]
+    a = results['images'].reshape(rows, cols, imsize, imsize, channels)
     a = a.swapaxes(1, 2)
     a = a.reshape(rows * imsize, cols * imsize, channels)
-    plt.imshow(a)
+    plt.imshow(a.astype('int16'))
     plt.axis('off')
     plt.show()
     
