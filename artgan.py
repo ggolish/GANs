@@ -107,8 +107,8 @@ class GAN():
             
             if iteration % self.S["sample_interval"] == 0:
                 with torch.no_grad():
-                    img = 127.5 * self.G(baseline_z).permute(0, 2, 3, 1).numpy() + 127.5
-                yield {"d_losses": np.array(d_losses), "g_loss": g_loss, "img": img.astype("int16")}
+                    img = self.G(baseline_z).numpy()[0]
+                yield {"d_losses": np.array(d_losses), "g_loss": g_loss, "img": img}
 
     def train_critic(self, x_batch, z_batch, d_optim):
         if self.gen_mode:
@@ -145,16 +145,18 @@ class GAN():
         return self.G(z)
 
 if __name__ == '__main__':
-    settings = {
+    gan = GAN({
         'dataset': 'cifar',
         'image_size': 32, 
         'nchannels': 3,
-        'iterations': 1000,
+        'iterations': 100,
         'sample_interval': 20,
-        'learning_rate': 0.00005,
-        'nfeatures': 64,
+        'learning_rate': 0.00001,
+        'nfeatures': 128,
         'batch_size': 64,
-    }
-
-    trainer.explore_hyperparam('clipping', np.arange(0.01, 0.11, 0.01), settings=settings)
+        'clipping': 0.01
+    })
+    trainer.train(gan, "cifar-test")
+    res, _ = trainer.load_results("cifar-test")
+    trainer.display_images(res, 1, 5)
 
