@@ -5,7 +5,8 @@
 import torch
 import math
 
-from torch.nn import Module, Conv2d, ConvTranspose2d, BatchNorm2d, LeakyReLU, ReLU, Tanh, Sigmoid
+from torch.nn import Module, Conv2d, ConvTranspose2d, BatchNorm2d
+from torch.nn import ReLU, Tanh, Sigmoid, LeakyReLU
 
 
 class CriticArchitecture(Module):
