@@ -24,6 +24,7 @@ DEFAULT_SETTINGS = {
 
     # WGAN training hyperparams
     'clipping_constant': 0.01,
+    'ncritic': 5,
 
     # WGAN-GP training hyperparams
     'gp_enabled': False,
@@ -55,18 +56,18 @@ class GAN():
     def __repr__(self):
         return f'GAN(\n{repr(self.D)}\n{repr(self.G)}\n)'
 
-    def train(self, dl, iterations=1000, lr=0.0002, si=20, nc=5, bs=128):
+    def train(self, dl, iterations=1000, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data '''
         if self.S['gp_enabled']:
             yield self.train_gp(dl, iterations, lr, si, nc, bs)
         else:
             yield self.train_no_gp(dl, iterations, lr, si, nc, bs)
 
-    def train_gp(self, dl, iterations=1000, lr=0.0002, si=20, nc=5, bs=128):
+    def train_gp(self, dl, iterations=1000, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data using wasserstein with gp'''
         pass
 
-    def train_no_gp(self, dl, iterations=1000, lr=0.0002, si=20, nc=5, bs=128):
+    def train_no_gp(self, dl, iterations=1000, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data using vanilla wasserstein'''
 
         d_optim = RMSprop(self.D.parameters(), lr=lr)
@@ -75,7 +76,7 @@ class GAN():
         for iteration in tqdm(range(iterations), ascii=True):
             # Train the critic
             d_losses = []
-            for _ in nc:
+            for _ in self.S['ncritic']:
                 self.D.zero_grad()
                 x_batch = next(iter(dl)).to(self.dev)
                 z_batch = self.get_latent_vec(bs).to(self.dev)
@@ -103,7 +104,7 @@ class GAN():
             if iteration % si == 0:
                 d_avg_loss = np.mean(d_losses)
                 g_loss = g_loss.cpu().item()
-                yield d_avg_loss, g_loss
+                yield {'d_loss': d_avg_loss, 'g_loss': g_loss}
 
     def get_latent_vec(self, n):
         ''' Returns random n x zdim x 1 x 1 latent vector '''
