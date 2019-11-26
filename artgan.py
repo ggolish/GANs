@@ -1,178 +1,116 @@
 #!/usr/bin/env python3
+
 import sys
 import torch
-import random
 import numpy as np
-import trainer
-from torch.nn import Module
-from torch.optim import Adam, RMSprop
-from architecture.dc import DCGAN
-from loader import load_dataset
-from matplotlib import pyplot as plt
+
+from architecture import load_generator, load_critic
+from torch.optim import RMSprop, Adam
 from tqdm import tqdm
 
-
+# The default hyperparams for a GAN
 DEFAULT_SETTINGS = {
-    'dataset': 'ross',          # The dataset for the gan to use during training
-    'critic_arch': DCGAN,       # The base architucture of the critic
-    'generator_arch': DCGAN,    # The base architucture of the generator
-    'batch_size': 128,          # The size of each batch during training
-    'image_size': 64,           # The width and height of the images (power of 2)
-    'nchannels': 3,             # The number of color channels in the images
-    'nfeatures': 128,           # DCGAN: The starting number of kernals in first layer
-    'iterations': 1,            # The number of iterations to train on
-    'sample_interval': 1,       # The number of iterations in which to report stats
-    'ncritic': 5,               # The number of times to train critic per iteration
-    'clipping': 0.01,           # The clipping constant for wasserstein distance (gp_enabled == false)
-    'gradient_penalty': 10,     # The gradient penalty for critic
-    'gp_enabled': False,        # Training with gradient penalty flag
-    'learning_rate': 0.0001,    # The learning rate for adam optimizer
-    'beta1': 0,                 # The first beta for adam optimizer
-    'beta2': 0.9,               # The second beta for adam optimizer
-    'zdim': 100,                # The number of entries in the latent vectors
-    'device': "cpu"             # The device to run training on
+    # General hyperparams
+    'critic_arch': 'dc',
+    'generator_arch': 'dc',
+    'zdim': 100,
+
+    # Image hyperparams
+    'image_size': 64,
+    'nchannels': 3,
+
+    # DCGAN hyperparams
+    'nfeatures': 128,
+
+    # WGAN training hyperparams
+    'clipping_constant': 0.01,
+
+    # WGAN-GP training hyperparams
+    'gp_enabled': False,
+    'gradient_penalty': 10,
 }
-
-class Critic(Module):
-    """ Critic network class """
-
-    def __init__(self, S=DEFAULT_SETTINGS):
-        super().__init__()
-        self.arch = S["critic_arch"](True, S)
-        self.S = S
-        self.device = torch.device(self.S["device"])
-
-    def forward(self, x):
-        return self.arch.forward(x.to(self.device))
-   
-
-class Generator(Module):
-    """ Generator network class """
-
-    def __init__(self, S=DEFAULT_SETTINGS):
-        super().__init__()
-        self.arch = S["generator_arch"](False, S)
-        self.S = S
-        # We have to set the device on the Critic and Generator as well
-        self.device = torch.device(self.S["device"])
-
-    def forward(self, x):
-        return self.arch.forward(x.to(self.device))
 
 
 class GAN():
-    """
-        Generalized GAN class
-    """
+
     def __init__(self, settings={}):
-        self.S = DEFAULT_SETTINGS
-        for k, v in settings.items():
-            if k in self.S:
-                self.S[k] = v
+        ''' Generic GAN class '''
+
+        # Parse user supplied settings
+        self.S = DEFAULT_SETTINGS.copy()
+        for key in settings:
+            if key in self.S:
+                self.S[key] = settings[key]
             else:
-                sys.stderr.write(f"Warning: Invalid setting {k} = {v}!\n")
+                sys.stderr.write(
+                    f'Warning: Invalid hyperparam setting {key}!\n')
 
-        if self.S["device"] == "cuda" and torch.cuda.is_available() == False:
-            sys.stderr.write("Warning: Device set to cuda, cuda not available.\n")
+        # Choose the proper device
+        self.dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        self.device = torch.device(self.S["device"])
-        print(f"DEVICE: {self.device}")
-        self.D = Critic(self.S).to(self.device)
-        # self.D.arch = self.D.arch.to(self.device)
-        self.G = Generator(self.S).to(self.device)
-        # self.G.arch = self.G.arch.to(self.device)
-        self.gen_mode = (self.S['dataset'] == None)
-        if not self.gen_mode:
-            self.dl = load_dataset(self.S["dataset"], batch_size=self.S["batch_size"], imsize=self.S["image_size"])
+        # Build critic and generator
+        self.D = load_critic(self.S).to(self.dev)
+        self.G = load_generator(self.S).to(self.dev)
 
-    def train(self):
-        """ Train the GAN for a specified number of iterations """
+    def __repr__(self):
+        return f'GAN(\n{repr(self.D)}\n{repr(self.G)}\n)'
 
-        if self.gen_mode:
-            sys.stderr.write("Error: GAN loaded in generate mode, cannot train.")
-            return 
-
-        if self.S["gp_enabled"]:
-            d_optim = Adam(self.D.parameters(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
-            g_optim = Adam(self.G.parameters(), lr=self.S["learning_rate"], betas=(self.S["beta1"], self.S["beta2"]))
+    def train(self, dl, iterations=1000, lr=0.0002, si=20, nc=5, bs=128):
+        ''' Trains the GAN on the given data '''
+        if self.S['gp_enabled']:
+            yield self.train_gp(dl, iterations, lr, si, nc, bs)
         else:
-            d_optim = RMSprop(self.D.parameters(), lr=self.S["learning_rate"])
-            g_optim = RMSprop(self.G.parameters(), lr=self.S["learning_rate"])
+            yield self.train_no_gp(dl, iterations, lr, si, nc, bs)
 
-        baseline_z = torch.normal(0, 1, (1, self.S["zdim"]))
-        
-        for iteration in tqdm(range(self.S["iterations"]), ascii=True):
+    def train_gp(self, dl, iterations=1000, lr=0.0002, si=20, nc=5, bs=128):
+        ''' Trains the GAN on the given data using wasserstein with gp'''
+        pass
+
+    def train_no_gp(self, dl, iterations=1000, lr=0.0002, si=20, nc=5, bs=128):
+        ''' Trains the GAN on the given data using vanilla wasserstein'''
+
+        d_optim = RMSprop(self.D.parameters(), lr=lr)
+        g_optim = RMSprop(self.D.parameters(), lr=lr)
+
+        for iteration in tqdm(range(iterations), ascii=True):
+            # Train the critic
             d_losses = []
-            for _ in range(self.S["ncritic"]):
-                x_batch = next(iter(self.dl)).to(self.device)
-                z_batch = torch.normal(0, 1, (self.S["batch_size"], self.S["zdim"])).to(self.device)
-                curr_loss = self.train_critic(x_batch, z_batch, d_optim)
-                d_losses.append(curr_loss.item())
-            z_batch = torch.normal(0, 1, (self.S["batch_size"], self.S["zdim"])).to(self.device)
-            g_loss = self.train_generator(z_batch, g_optim).item()
-            
-            if iteration % self.S["sample_interval"] == 0:
-                with torch.no_grad():
-                    # To convert to numpy we have to move the tensor back to the cpu
-                    img = 127.5 * self.G(baseline_z).to('cpu').permute(0, 2, 3, 1).numpy() + 127.5
-                yield {"d_losses": np.array(d_losses), "g_loss": g_loss, "img": img.astype("int16")}
+            for _ in nc:
+                self.D.zero_grad()
+                x_batch = next(iter(dl)).to(self.dev)
+                z_batch = self.get_latent_vec(bs).to(self.dev)
+                g_out = self.G(z_batch).detach()
+                d_real = self.D(x_batch)
+                d_fake = self.D(g_out)
+                d_loss = -(torch.mean(d_real) - torch.mean(d_fake))
+                d_loss.backward()
+                d_optim.step()
+                d_losses.append(-d_loss.cpu().item())
+                for p in self.D.parameters():
+                    p.data = torch.clamp(p.data, -self.S['clipping_constant'],
+                                         self.S['clipping_constant'])
 
-    def train_critic(self, x_batch, z_batch, d_optim):
-        if self.gen_mode:
-            sys.stderr.write("Error: GAN loaded in generate mode, cannot train.")
-            return 
-        self.D.zero_grad()
-        loss = None
-        if self.S["gp_enabled"]:
-            pass
-        else:
-            y_real = self.D(x_batch)
-            y_fake = self.D(self.G(z_batch).detach())
-            loss = torch.mean(y_fake) - torch.mean(y_real)
-        loss.backward()
-        d_optim.step()
-        if not self.S["gp_enabled"]:
-            for p in self.D.parameters():
-                p.data = torch.clamp(p.data, -self.S["clipping"], self.S["clipping"])
-        return loss
+            # Train the generator
+            self.G.zero_grad()
+            z_batch = self.get_latent_vec(bs)
+            g_out = self.G(z_batch)
+            d_fake = self.D(g_out)
+            g_loss = -torch.mean(d_fake)
+            g_loss.backward()
+            g_optim.step()
 
-    def train_generator(self, z_batch, g_optim):
-        if self.gen_mode:
-            sys.stderr.write("Error: GAN loaded in generate mode, cannot train.")
-            return 
-        self.G.zero_grad()
-        y_fake = self.D(self.G(z_batch))
-        loss = -torch.mean(y_fake)
-        loss.backward()
-        g_optim.step()
-        return loss
+            # Yield results each sample inteval
+            if iteration % si == 0:
+                d_avg_loss = np.mean(d_losses)
+                g_loss = g_loss.cpu().item()
+                yield d_avg_loss, g_loss
 
-    def generate_image(self, n=1):
-        z = torch.normal(0, 1, (n, self.S['zdim']))
-        return self.G(z)
+    def get_latent_vec(self, n):
+        ''' Returns random n x zdim x 1 x 1 latent vector '''
+        return torch.randn(n, self.S['zdim'], 1, 1)
 
-if __name__ == '__main__':
-    gan = GAN({
-        'dataset': 'cifar',
-        'image_size': 32, 
-        'nchannels': 3,
-        'iterations': 100,
-        'sample_interval': 20,
-        'learning_rate': 0.00001,
-        'nfeatures': 128,
-        'batch_size': 64,
-        'device': 'cuda'
-    }
 
-    # trainer.explore_hyperparam('clipping', np.arange(0.01, 0.11, 0.01), settings=settings)
-    results, gan = trainer.load_results('gan-clipping-0.01')
-    trainer.display_images(results, 5, 10)
-    results, gan = trainer.load_results('gan-clipping-0.02')
-    trainer.display_images(results, 5, 10)
-    results, gan = trainer.load_results('gan-clipping-0.03')
-    trainer.display_images(results, 5, 10)
-    results, gan = trainer.load_results('gan-clipping-0.04')
-    trainer.display_images(results, 5, 10)
-    results, gan = trainer.load_results('gan-clipping-0.05')
-    trainer.display_images(results, 5, 10)
+if __name__ == "__main__":
 
+    gan = GAN()
+    print(gan)
