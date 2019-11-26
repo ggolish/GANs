@@ -1,95 +1,72 @@
 #!/usr/bin/env python3
 
-''' Module for handling generic GAN experiments and the results of those experiments '''
+''' Module for handling GAN training '''
 
-import artgan
-import numpy as np
-import os
-import pickle
 import torch
-import matplotlib.pyplot as plt
 import sys
+import os
 
-def train(gan: artgan.GAN, name: str, dest:str="results"):
-    
-    results = {"d_losses": [], "g_losses": [], "images": []}
-
-    try:
-        for metrics in gan.train():
-            results["d_losses"].append(np.mean(metrics["d_losses"]))
-            results["g_losses"].append(metrics["g_loss"])
-            results["images"].append(metrics["img"])
-    except KeyboardInterrupt:
-        print("Storing results.")
-        store_results(results, gan, name, dest=dest)
-        sys.exit(0)
-
-    store_results(results, gan, name, dest=dest)
+# Default training parameters
+DEFAULT_SETTINGS = {
+    'iterations': 1000,
+    'sample_interval': 20,
+    'learning_rate': 0.0002,
+    'batch_size': 128,
+    'dest': 'results'
+}
 
 
-def clean_images(imgs):
-    a = 127.5 * np.transpose(imgs, (0, 2, 3, 1)) + 127.5
-    return a.astype("int16")
+def train(gan, name, dl, settings={}, checkpoints=True):
+    ''' Trains a GAN on the given data and handles results '''
 
-def store_results(results: dict, gan: artgan.GAN, name: str, dest:str="results"):
-    dest = os.path.join(dest, name)
-    gan_dest = os.path.join(dest, "gan.pt")
-    results_dest = os.path.join(dest, "results.pickle")
-    settings_dest = os.path.join(dest, "settings.pickle")
-    os.makedirs(dest, exist_ok=True)
+    # Parse settings
+    S = DEFAULT_SETTINGS.copy()
+    for key in settings:
+        if key in S:
+            S[key] = settings[key]
+        else:
+            sys.stderr.write(f'Warning: Invalid training param {key}!\n')
 
+    # Create destination to store checkpoints/results
+    dest = os.path.join(S['dest'], name)
+    os.makedirs(dest)
+
+    curr_iteration = 1
+    results = {}
+    for metrics in gan.train(dl, S['iterations'], S['learning_rate'],
+                             S['sample_interval'], S['batch_size']):
+        for key in metrics:
+            if key not in results:
+                results[key] = [metrics[key]]
+            else:
+                results[key].append(key)
+        if checkpoints:
+            store_checkpoint(dest, name, gan, metrics, curr_iteration)
+        curr_iteration += 1
+
+    store_results(dest, name, gan, results)
+
+    return results
+
+
+def store_checkpoint(dest, name, gan, metrics, iteration):
+    ''' Stores a copy of the GAN at a checkpoint during training '''
+    path = '{}-checkpoint-{:05d}.pt'.format(name, iteration)
+    path = os.path.join(dest, path)
     torch.save({
-        'generator_state_dict': gan.G.arch.state_dict(),
-        'critic_state_dict': gan.D.arch.state_dict()
-    }, gan_dest)
+        'iteration': iteration,
+        'metrics': metrics,
+        'd_state_dict': gan.D.state_dict(),
+        'g_state_dict': gan.G.state_dict()
+    }, path)
 
-    with open(settings_dest, "wb") as fd:
-        pickle.dump(gan.S, fd)
 
-    results["images"] = np.array(results["images"])
-    results["images"] = clean_images(results["images"])
-    with open(results_dest, "wb") as fd:
-        pickle.dump(results, fd)
-    
-def load_results(name: str, dest:str="results"):
-    dest = os.path.join(dest, name)
-    gan_dest = os.path.join(dest, "gan.pt")
-    results_dest = os.path.join(dest, "results.pickle")
-    settings_dest = os.path.join(dest, "settings.pickle")
-
-    with open(settings_dest, "rb") as fd:
-        settings = pickle.load(fd)
-
-    with open(results_dest, "rb") as fd:
-        results = pickle.load(fd)
-
-    settings["dataset"] = None
-    gan = artgan.GAN(settings)
-    pt = torch.load(gan_dest)
-    gan.D.arch.load_state_dict(pt["critic_state_dict"])
-    gan.G.arch.load_state_dict(pt["generator_state_dict"])
-
-    return (results, gan)
-
-def display_images(results: dict, rows: int, cols: int):
-    if rows * cols != len(results['images']):
-        sys.stderr.write("Error: invalid number of rows and columns.\n")
-        sys.stderr.write(f'{len(results["images"])}\n')
-        return
-    imsize = results['images'].shape[1]
-    channels = results['images'].shape[3]
-    a = results['images'].reshape(rows, cols, imsize, imsize, channels)
-    a = a.swapaxes(1, 2)
-    a = a.reshape(rows * imsize, cols * imsize, channels)
-    plt.imshow(a.astype('int16'))
-    plt.axis('off')
-    plt.show()
-    
-def explore_hyperparam(param: str, values: iter, name:str="gan", settings:dict={}):
-    for value in values:
-        print(f"Training with {param} = {value}.")
-        settings[param] = value
-        gan = artgan.GAN(settings)
-        curr_name = f"{name}-{param}-{value}"
-        train(gan, curr_name)
-        
+def store_results(dest, name, gan, results):
+    ''' Stores the results of a GAN after training '''
+    path = '{}-results.pt'.format(name)
+    path = os.path.join(dest, path)
+    torch.save({
+        'results': results,
+        'd_state_dict': gan.D.state_dict(),
+        'g_state_dict': gan.G.state_dict()
+    }, path)
