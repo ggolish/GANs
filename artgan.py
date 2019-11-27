@@ -134,9 +134,11 @@ if __name__ == "__main__":
     dl = cifar.load(batch_size=64)
     res = ganutils.trainer.train(gan, 'wgan-test', dl, {
         'batch_size': 64,
-        'iterations': 50000,
-        'sample_interval': 1000,
-        'learning_rate': 0.0005
+        'iterations': 1000,
+        'sample_interval': 20,
+        'learning_rate': 0.00005
     })
 
     ganutils.visualize.plot_losses(res['d_loss'], res['g_loss'])
+    images = ganutils.generate_images(gan, 100)
+    ganutils.visualize.images_as_grid(images, 10, 10, 'Generated Images')
