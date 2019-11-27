@@ -76,7 +76,7 @@ class GAN():
         for iteration in tqdm(range(iterations), ascii=True):
             # Train the critic
             d_losses = []
-            for _ in self.S['ncritic']:
+            for _ in range(self.S['ncritic']):
                 self.D.zero_grad()
                 x_batch = next(iter(dl)).to(self.dev)
                 z_batch = self.get_latent_vec(bs).to(self.dev)
@@ -93,7 +93,7 @@ class GAN():
 
             # Train the generator
             self.G.zero_grad()
-            z_batch = self.get_latent_vec(bs)
+            z_batch = self.get_latent_vec(bs).to(self.dev)
             g_out = self.G(z_batch)
             d_fake = self.D(g_out)
             g_loss = -torch.mean(d_fake)
