@@ -3,10 +3,12 @@
 import sys
 import torch
 import numpy as np
+import ganutils
 
 from architecture import load_generator, load_critic
 from torch.optim import RMSprop, Adam
 from tqdm import tqdm
+from loader import cifar
 
 # The default hyperparams for a GAN
 DEFAULT_SETTINGS = {
@@ -113,5 +115,18 @@ class GAN():
 
 if __name__ == "__main__":
 
-    gan = GAN()
-    print(gan)
+    gan = GAN({
+        'image_size': 32,
+        'nfeatures': 64,
+        'nchannels': 3,
+    })
+
+    dl = cifar.load(batch_size=64)
+    res = ganutils.trainer.train(gan, 'wgan-test', dl, {
+        'batch_size': 64,
+        'iterations': 50000,
+        'sample_interval': 1000,
+        'learning_rate': 0.0005
+    })
+
+    ganutils.visualize.plot_losses(res['d_loss'], res['g_loss'])
