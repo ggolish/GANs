@@ -61,9 +61,11 @@ class GAN():
     def train(self, dl, iterations=1000, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data '''
         if self.S['gp_enabled']:
-            yield self.train_gp(dl, iterations, lr, si, nc, bs)
+            for metrics in self.train_gp(dl, iterations, lr, si, bs):
+                yield metrics
         else:
-            yield self.train_no_gp(dl, iterations, lr, si, nc, bs)
+            for metrics in self.train_no_gp(dl, iterations, lr, si, bs):
+                yield metrics
 
     def train_gp(self, dl, iterations=1000, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data using wasserstein with gp'''
