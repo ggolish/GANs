@@ -75,7 +75,7 @@ class GAN():
         ''' Trains the GAN on the given data using vanilla wasserstein'''
 
         d_optim = RMSprop(self.D.parameters(), lr=lr)
-        g_optim = RMSprop(self.D.parameters(), lr=lr)
+        g_optim = RMSprop(self.G.parameters(), lr=lr)
 
         for iteration in tqdm(range(iterations), ascii=True):
             # Train the critic
