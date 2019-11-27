@@ -31,6 +31,7 @@ def train(gan, name, dl, settings={}, checkpoints=True):
     dest = os.path.join(S['dest'], name)
     os.makedirs(dest)
 
+    # Run training session and store results
     curr_iteration = 1
     results = {}
     for metrics in gan.train(dl, S['iterations'], S['learning_rate'],
