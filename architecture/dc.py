@@ -45,7 +45,6 @@ class CriticArchitecture(Module):
             mult *= 2
         conv2d = Conv2d(self.nfeatures * mult, 1, 4, 1, 0, bias=False)
         self.layers.append(conv2d)
-        self.activation = Sigmoid()
 
         # Ensure all parameters are accessible
         for i, layer in enumerate(self.layers):
@@ -59,15 +58,6 @@ class CriticArchitecture(Module):
                 print(layer)
                 print(x.shape, '=>', end=' ')
             x = layer(x)
-            if self.debug:
-                print(x.shape)
-                print()
-
-        if not self.gp_enabled:
-            if self.debug:
-                print(self.activation)
-                print(x.shape, '=>', end=' ')
-            x = self.activation(x)
             if self.debug:
                 print(x.shape)
                 print()
