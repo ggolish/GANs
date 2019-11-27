@@ -5,18 +5,21 @@
 import torch
 import sys
 import os
+import json
+
+from tqdm import tqdm
 
 # Default training parameters
 DEFAULT_SETTINGS = {
     'iterations': 1000,
     'sample_interval': 20,
     'learning_rate': 0.0002,
-    'batch_size': 128,
-    'dest': 'results'
+    'batch_size': 128
 }
 
 
-def train(gan, name, dl, settings={}, checkpoints=True):
+def train(gan, name, dl, settings={}, dest='results', checkpoints=True,
+          ci=0, cr={}):
     ''' Trains a GAN on the given data and handles results '''
 
     # Parse settings
@@ -28,13 +31,18 @@ def train(gan, name, dl, settings={}, checkpoints=True):
             sys.stderr.write(f'Warning: Invalid training param {key}!\n')
 
     # Create destination to store checkpoints/results
-    dest = os.path.join(S['dest'], name)
+    dest = os.path.join(dest, name)
     os.makedirs(dest, exist_ok=True)
 
+    # Store training session settings for later recovery
+    settings_dest = os.path.join(dest, 'settings.json')
+    with open(settings_dest, 'w') as fd:
+        json.dump(S, fd)
+
     # Run training session and store results
-    curr_iteration = 0
-    results = {}
-    for metrics in gan.train_no_gp(dl, S['iterations'], S['learning_rate'],
+    curr_iteration = ci
+    results = cr
+    for metrics in gan.train_no_gp(dl, S['iterations'], ci, S['learning_rate'],
                                    S['sample_interval'], S['batch_size']):
         for key in metrics:
             if key not in results:
@@ -50,6 +58,36 @@ def train(gan, name, dl, settings={}, checkpoints=True):
     return results
 
 
+def recover_training_state(name, dest='results'):
+    ''' Recover a previous training session '''
+
+    # Load checkpoints
+    dest = os.path.join(dest, name)
+    checkpoints = load_checkpoints(dest, name)
+
+    # Bring results up to date
+    results = {}
+    for c in checkpoints:
+        for key in c['metrics']:
+            if key not in results:
+                results[key] = [c['metrics'][key]]
+            else:
+                results[key].append(c['metrics'][key])
+
+    # Load training settings
+    settings_dest = os.path.join(dest, 'settings.json')
+    with open(settings_dest, 'r') as fd:
+        S = json.load(fd)
+
+    return (S, checkpoints[-1], results)
+
+
+def is_training_started(name, dest='results'):
+    ''' Checks if the training session has been started '''
+    path = os.path.join(dest, name)
+    return os.path.exists(path)
+
+
 def store_checkpoint(dest, name, gan, metrics, iteration):
     ''' Stores a copy of the GAN at a checkpoint during training '''
     path = '{}-checkpoint-{:05d}.pt'.format(name, iteration)
@@ -57,6 +95,7 @@ def store_checkpoint(dest, name, gan, metrics, iteration):
     torch.save({
         'iteration': iteration,
         'metrics': metrics,
+        'settings': gan.S,
         'd_state_dict': gan.D.state_dict(),
         'g_state_dict': gan.G.state_dict()
     }, path)
@@ -68,6 +107,18 @@ def store_results(dest, name, gan, results):
     path = os.path.join(dest, path)
     torch.save({
         'results': results,
+        'settings': gan.S,
         'd_state_dict': gan.D.state_dict(),
         'g_state_dict': gan.G.state_dict()
     }, path)
+
+
+def load_checkpoints(dest, name):
+    ''' Loads all checkpoints in a training session '''
+    prefix = f'{name}-checkpoint'
+    paths = [os.path.join(dest, f)
+             for f in os.listdir(dest) if f.startswith(prefix)]
+    print('Loading checkpoints:')
+    dev = torch.device('cpu')
+    checkpoints = [torch.load(p, map_location=dev) for p in tqdm(paths)]
+    return sorted(checkpoints, key=lambda c: c['iteration'])

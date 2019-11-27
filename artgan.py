@@ -71,13 +71,14 @@ class GAN():
         ''' Trains the GAN on the given data using wasserstein with gp'''
         pass
 
-    def train_no_gp(self, dl, iterations=1000, lr=0.0002, si=20, bs=128):
+    def train_no_gp(self, dl, iterations=1000, ci=0, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data using vanilla wasserstein'''
 
         d_optim = RMSprop(self.D.parameters(), lr=lr)
         g_optim = RMSprop(self.G.parameters(), lr=lr)
 
-        for iteration in tqdm(range(iterations), ascii=True):
+        for iteration in tqdm(range(ci, iterations), ascii=True, initial=ci,
+                              total=iterations):
             # Train the critic
             d_losses = []
             for _ in range(self.S['ncritic']):
