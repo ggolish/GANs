@@ -48,8 +48,8 @@ class GAN():
                 sys.stderr.write(
                     f'Warning: Invalid hyperparam setting {key}!\n')
 
-        # Choose the proper device
-        self.dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # Start the GAN on cpu
+        self.dev = torch.device('cpu')
 
         # Build critic and generator
         self.D = load_critic(self.S).to(self.dev)
@@ -115,30 +115,50 @@ class GAN():
         return torch.randn(n, self.S['zdim'], 1, 1)
 
     def generate_image(self, z):
+        ''' Generate an image from the generator with given latent vec '''
         return self.G(z).to(self.dev)
 
     def cpu(self):
+        ''' Move the GAN to the cpu '''
         self.dev = torch.device('cpu')
+        self.D.to(self.dev)
+        self.G.to(self.dev)
+
+    def cuda(self):
+        ''' Move the GAN to the gpu '''
+        if not torch.cuda.is_available():
+            sys.stderr.write("Error: Cuda unavailable!\n")
+            return
+        self.dev = torch.device('cuda')
         self.D.to(self.dev)
         self.G.to(self.dev)
 
 
 if __name__ == "__main__":
 
-    gan = GAN({
-        'image_size': 32,
-        'nfeatures': 64,
-        'nchannels': 3,
-    })
-
+    name = 'wgan-test'
     dl = cifar.load(batch_size=64)
-    res = ganutils.trainer.train(gan, 'wgan-test', dl, {
-        'batch_size': 64,
-        'iterations': 1000,
-        'sample_interval': 20,
-        'learning_rate': 0.00005
-    })
 
-    ganutils.visualize.plot_losses(res['d_loss'], res['g_loss'])
-    images = ganutils.generate_images(gan, 100)
-    ganutils.visualize.images_as_grid(images, 10, 10, 'Generated Images')
+    if ganutils.trainer.is_training_started(name):
+        ts, cp, res = ganutils.trainer.recover_training_state('wgan-test')
+        gan = GAN(cp['settings'])
+        gan.D.load_state_dict(cp['d_state_dict'])
+        gan.G.load_state_dict(cp['g_state_dict'])
+        gan.cuda()
+        res = ganutils.trainer.train(gan, 'wgan-test', dl, ts,
+                                     ci=cp['iteration'], cr=res)
+    else:
+        gan = GAN({
+            'image_size': 32,
+            'nchannels': 3,
+            'nfeatures': 64
+        })
+
+        gan.cuda()
+
+        res = ganutils.trainer.train(gan, 'wgan-test', dl, {
+            'iterations': 300000,
+            'sample_interval': 600,
+            'learning_rate': 0.00005,
+            'batch_size': 64
+        })
