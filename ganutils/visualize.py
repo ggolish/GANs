@@ -1,5 +1,5 @@
 
-import maplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import imageio
@@ -8,10 +8,12 @@ import imageio
 def plot_losses(d_losses: list, g_losses: list, name='GAN Losses'):
     ''' Plot GAN critic and generator losses '''
 
-    plt.plot(d_losses, 'Critic')
-    plt.plot(g_losses, 'Generator')
+    plt.plot(d_losses, label='Critic')
+    plt.plot(g_losses, label='Generator')
     plt.legend()
     plt.title(name)
+    plt.xlabel('Iteration')
+    plt.ylabel('Loss')
     plt.show()
 
 
