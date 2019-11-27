@@ -29,21 +29,21 @@ def train(gan, name, dl, settings={}, checkpoints=True):
 
     # Create destination to store checkpoints/results
     dest = os.path.join(S['dest'], name)
-    os.makedirs(dest)
+    os.makedirs(dest, exist_ok=True)
 
     # Run training session and store results
-    curr_iteration = 1
+    curr_iteration = 0
     results = {}
-    for metrics in gan.train(dl, S['iterations'], S['learning_rate'],
-                             S['sample_interval'], S['batch_size']):
+    for metrics in gan.train_no_gp(dl, S['iterations'], S['learning_rate'],
+                                   S['sample_interval'], S['batch_size']):
         for key in metrics:
             if key not in results:
                 results[key] = [metrics[key]]
             else:
-                results[key].append(key)
+                results[key].append(metrics[key])
         if checkpoints:
             store_checkpoint(dest, name, gan, metrics, curr_iteration)
-        curr_iteration += 1
+        curr_iteration += S['sample_interval']
 
     store_results(dest, name, gan, results)
 
