@@ -43,8 +43,7 @@ class CriticArchitecture(Module):
             activation = LeakyReLU(0.02, inplace=True)
             self.layers.append(activation)
             mult *= 2
-        conv2d = Conv2d(self.nfeatures * mult, self.nfeatures *
-                        mult * 2, 4, 1, 0, bias=False)
+        conv2d = Conv2d(self.nfeatures * mult, 1, 4, 1, 0, bias=False)
         self.layers.append(conv2d)
         self.activation = Sigmoid()
 
@@ -97,7 +96,7 @@ class GeneratorArchitecture(Module):
         # Build appropriate number of layers
         self.layers = []
         p = int(math.log2(self.imsize))
-        mult = 2**(p - 1)
+        mult = 2**(p - 2)
         for i in range(p - 2):
             s = 1 if i == 0 else 2
             pad = 0 if i == 0 else 1
