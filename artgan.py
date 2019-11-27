@@ -90,7 +90,7 @@ class GAN():
                 d_loss = -(torch.mean(d_real) - torch.mean(d_fake))
                 d_loss.backward()
                 d_optim.step()
-                d_losses.append(-d_loss.cpu().item())
+                d_losses.append(d_loss)
                 for p in self.D.parameters():
                     p.data = torch.clamp(p.data, -self.S['clipping_constant'],
                                          self.S['clipping_constant'])
@@ -106,13 +106,21 @@ class GAN():
 
             # Yield results each sample inteval
             if iteration % si == 0:
-                d_avg_loss = np.mean(d_losses)
-                g_loss = g_loss.cpu().item()
-                yield {'d_loss': d_avg_loss, 'g_loss': g_loss}
+                d_avg_loss = np.mean([l.cpu().item() for l in d_losses])
+                g_loss_cpu = g_loss.cpu().item()
+                yield {'d_loss': d_avg_loss, 'g_loss': g_loss_cpu}
 
     def get_latent_vec(self, n):
         ''' Returns random n x zdim x 1 x 1 latent vector '''
         return torch.randn(n, self.S['zdim'], 1, 1)
+
+    def generate_image(self, z):
+        return self.G(z).to(self.dev)
+
+    def cpu(self):
+        self.dev = torch.device('cpu')
+        self.D.to(self.dev)
+        self.G.to(self.dev)
 
 
 if __name__ == "__main__":
