@@ -4,6 +4,7 @@ import numpy as np
 
 
 def generate_images(gan, n):
+    ''' Generates n images from GAN gan '''
     gan.cpu()
     with torch.no_grad():
         images = []
