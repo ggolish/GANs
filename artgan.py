@@ -33,6 +33,20 @@ DEFAULT_SETTINGS = {
     'gradient_penalty': 10,
 }
 
+# Informatation for argparse
+INFO = {
+    'critic_arch': [str, 'Architecture to use in Critic.'],
+    'generator_arch': [str, 'Architecture to use in Generator.'],
+    'zdim': [int, 'The dimension of latent vectors.'],
+    'image_size': [int, 'Image size for dataset (must be power of 2).'],
+    'nchannels': [int, 'Number of channels in image.'],
+    'nfeatures': [int, 'Number of features in first layer of DCGAN.'],
+    'clipping_constant': [float, 'Clipping constant for Wasserstein distance.'],
+    'ncritic': [int, 'Number of times to train critic before generator.'],
+    'gp_enabled': [bool, 'Whether or not to use gradient penalty.'],
+    'gradient_penalty': [float, 'Gradient penalty constant for WGAN-GP.']
+}
+
 
 class GAN():
 

@@ -17,6 +17,13 @@ DEFAULT_SETTINGS = {
     'batch_size': 128
 }
 
+INFO = {
+    'iterations': [int, 'Number of iterations to train model.'],
+    'sample_interval': [int, 'Interval between metrics collections.'],
+    'learning_rate': [float, 'Learning rate for gradient descent.'],
+    'batch_size': [int, 'The size of a training batch.']
+}
+
 
 def train(gan, name, dl, settings={}, dest='results', checkpoints=True,
           ci=0, cr={}):
