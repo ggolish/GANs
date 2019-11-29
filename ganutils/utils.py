@@ -16,6 +16,19 @@ def generate_images(gan, n):
         return clean_images(images)
 
 
+def generate_baseline_images(checkpoints):
+    ''' Generates an image from the same latent vector from each checkpoint in
+        training session '''
+    with torch.no_grad():
+        z = checkpoints[0].get_latent_vec(1)
+        imgs = []
+        for gan in checkpoints:
+            img = gan.G(z)[0]
+            imgs.append(img)
+    imgs = np.array(imgs)
+    return clean_images(imgs)
+
+
 def clean_images(images):
     ''' Converts gan form images to normal form '''
     a = 127.5 * np.transpose(images, (0, 2, 3, 1)) + 127.5
