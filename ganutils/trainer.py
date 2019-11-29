@@ -123,3 +123,12 @@ def load_checkpoints(dest, name):
     checkpoints = [torch.load(p, map_location=dev)
                    for p in tqdm(paths, ascii=True)]
     return sorted(checkpoints, key=lambda c: c['iteration'])
+
+
+def load_results(dest, name):
+    ''' Loads the results of a specific training session '''
+    path = os.path.join(dest, f'{name}-results.pt')
+    if not os.path.exists(path):
+        sys.sterr.write('Unable to load results for session "{name}".\n')
+        return None
+    return torch.load(path)
