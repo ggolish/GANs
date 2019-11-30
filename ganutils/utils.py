@@ -2,6 +2,8 @@
 import torch
 import numpy as np
 
+from tqdm import tqdm
+
 
 def generate_images(gan, n):
     ''' Generates n images from GAN gan '''
@@ -22,8 +24,9 @@ def generate_baseline_images(checkpoints):
     with torch.no_grad():
         z = checkpoints[0].get_latent_vec(1)
         imgs = []
-        for gan in checkpoints:
-            img = gan.G(z)[0]
+        print('Generating baseline images:')
+        for gan in tqdm(checkpoints, ascii=True):
+            img = gan.G(z)[0].numpy()
             imgs.append(img)
     imgs = np.array(imgs)
     return clean_images(imgs)
