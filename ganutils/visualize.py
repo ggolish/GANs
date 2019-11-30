@@ -23,7 +23,7 @@ def images_as_grid(images, rows, cols, name='grid', save=False):
     # Ensure we have the proper number of images
     n, imsize, _, channels = images.shape
     if rows * cols != n:
-        sys.sterr.write("Error: Invalid dimensions for grid.\n")
+        sys.stderr.write("Error: Invalid dimensions for grid.\n")
         return
 
     # Reshape the list into a grid
