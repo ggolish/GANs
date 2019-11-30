@@ -17,12 +17,15 @@ if __name__ == "loader.loader":
 else:
     from downloader import download
 
+
 class GenericDataset():
 
     def __init__(self, ds_info: dict):
         self.ds_info = ds_info
-        self.len = len([f for f in os.listdir(self.ds_info["final_dest"]) if f.endswith(".npy")])
-        self.files = [f for f in os.listdir(self.ds_info["final_dest"]) if f.endswith(".npy")]
+        self.len = len([f for f in os.listdir(
+            self.ds_info["final_dest"]) if f.endswith(".npy")])
+        self.files = [f for f in os.listdir(
+            self.ds_info["final_dest"]) if f.endswith(".npy")]
 
     def __len__(self):
         return self.len
@@ -32,7 +35,7 @@ class GenericDataset():
         path = os.path.join(self.ds_info["final_dest"], self.files[i])
         return np.load(path)
 
-   
+
 def format_info(ds_info: dict, ds: str, imsize: int):
     # Add the image size to the dataset
     for k, v in ds_info.items():
@@ -40,8 +43,8 @@ def format_info(ds_info: dict, ds: str, imsize: int):
     return ds_info
 
 
-def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=256, batch_size:int=128):
-    
+def load_data(ds_info: dict, optimize: bool = True, verbose: bool = False, imsize: int = 256, batch_size: int = 128):
+
     # If the dataset is local, don't bother downloading it
     if os.path.exists(ds_info['local_dir']):
         ds_info['final_dir'] = ds_info['local_dir']
@@ -58,7 +61,8 @@ def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=
 
     if not os.path.exists(ds_info['final_dest']):
         os.mkdir(ds_info['final_dest'])
-        files = [f for f in os.listdir(ds_info['final_dir']) if f.endswith('.png') or f.endswith('.jpg')]
+        files = [f for f in os.listdir(ds_info['final_dir']) if f.endswith(
+            '.png') or f.endswith('.jpg')]
         count = 0
         for f in tqdm(files, ascii=True):
             images = []
@@ -73,9 +77,8 @@ def load_data(ds_info: dict, optimize:bool=True, verbose:bool=False, imsize:int=
     if verbose:
         print('Done.')
 
-    print(len(GenericDataset(ds_info)))
-
     return DataLoader(GenericDataset(ds_info), batch_size=batch_size, shuffle=True)
+
 
 def store_img(img: np.array, index: int, ds_info: dict):
     # Some images may not be in the correct shape (probably black and white)
@@ -87,7 +90,8 @@ def store_img(img: np.array, index: int, ds_info: dict):
         imgnpy = np.transpose(imgnpy, (2, 0, 1))
 
         # Save each image individually
-        dest = os.path.join(ds_info["final_dest"], "{}{:05d}.npy".format(ds_info["name"], index))
+        dest = os.path.join(
+            ds_info["final_dest"], "{}{:05d}.npy".format(ds_info["name"], index))
         np.save(dest, imgnpy)
 
     except ValueError:
