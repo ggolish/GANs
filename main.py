@@ -5,8 +5,10 @@ import sys
 import argparse
 import artgan
 import loader
+import ganutils
+import math
 
-from ganutils import trainer
+from ganutils import trainer, visualize
 
 
 def train(args):
@@ -42,41 +44,124 @@ def train(args):
         trainer.train(gan, args.name, dl, trainsettings)
 
 
+def results(args):
+    results = trainer.load_results(args.name)
+
+    gan = artgan.GAN(results['settings'])
+    gan.D.load_state_dict(results['d_state_dict'])
+    gan.G.load_state_dict(results['g_state_dict'])
+
+    # Plot losses
+    if args.losses:
+        d_losses, g_losses = results['results'].values()
+        visualize.plot_losses(d_losses, g_losses)
+
+    # Generate and display images
+    if args.generate:
+        r, c = args.generate
+        title = f'{args.name} Generated Images'
+        images = ganutils.generate_images(gan, r * c)
+        visualize.images_as_grid(images, r, c, name=title)
+
+    # Generate baseline images
+    if args.baseline:
+        checkpoints = trainer.load_checkpoints(args.name)
+        guess = math.floor(math.sqrt(len(checkpoints)))
+        skip = len(checkpoints) - (guess**2)
+        gans = []
+        for checkpoint in checkpoints[skip:]:
+            gan = artgan.GAN(checkpoint['settings'])
+            gan.D.load_state_dict(checkpoint['d_state_dict'])
+            gan.G.load_state_dict(checkpoint['g_state_dict'])
+            gans.append(gan)
+        images = ganutils.generate_baseline_images(gans)
+        title = f'{args.name} Baseline Images'
+        visualize.images_as_grid(images, guess, guess, name=title)
+
+
 def parse_args():
 
     parser = argparse.ArgumentParser('Artgan')
     subparsers = parser.add_subparsers(title='Subcommands')
 
-    train_parser = subparsers.add_parser('train',
-                                         help='Utilities for training a new GAN.')
-    train_parser.add_argument('dataset',
-                              type=str,
-                              choices=['ross', 'cifar',
-                                       'cubism', 'impressionism'],
-                              help='Dataset used during training.')
-    train_parser.add_argument('name', type=str,
-                              help='Name of new training session.')
+    # Create the train subcommand
+    train_parser = subparsers.add_parser(
+        'train',
+        help='Utilities for training a new GAN.'
+    )
+
+    train_parser.add_argument(
+        'dataset',
+        type=str,
+        choices=['ross', 'cifar', 'cubism', 'impressionism'],
+        help='Dataset used during training.'
+    )
+    train_parser.add_argument(
+        'name',
+        type=str,
+        help='Name of new training session.'
+    )
 
     for key, v in trainer.DEFAULT_SETTINGS.items():
         arg = key.replace('_', '-')
-        train_parser.add_argument(f'--{arg}',
-                                  type=trainer.INFO[key][0],
-                                  help=trainer.INFO[key][1],
-                                  default=v)
+        train_parser.add_argument(
+            f'--{arg}',
+            type=trainer.INFO[key][0],
+            help=trainer.INFO[key][1],
+            default=v
+        )
 
     for key, v in artgan.DEFAULT_SETTINGS.items():
         arg = key.replace('_', '-')
-        train_parser.add_argument(f'--{arg}',
-                                  type=artgan.INFO[key][0],
-                                  help=artgan.INFO[key][1],
-                                  default=v)
+        train_parser.add_argument(
+            f'--{arg}',
+            type=artgan.INFO[key][0],
+            help=artgan.INFO[key][1],
+            default=v
+        )
 
-    train_parser.add_argument('--cuda', action='store_true',
-                              help='Run training on gpu.')
-    train_parser.add_argument('--recover', action='store_true',
-                              help='Attempt to recover training session.')
+    train_parser.add_argument(
+        '--cuda',
+        action='store_true',
+        help='Run training on gpu.'
+    )
+    train_parser.add_argument(
+        '--recover',
+        action='store_true',
+        help='Attempt to recover training session.'
+    )
 
     train_parser.set_defaults(func=train)
+
+    # Create the results subcommand
+    results_parser = subparsers.add_parser(
+        'results',
+        help='Utilities to display training results.'
+    )
+
+    results_parser.add_argument(
+        'name',
+        type=str,
+        help='Name of training session to display results for.'
+    )
+    results_parser.add_argument(
+        '--losses',
+        action='store_true',
+        help='Display the losses of the training session [default].'
+    )
+    results_parser.add_argument(
+        '--generate',
+        type=int,
+        nargs=2,
+        help='Generate and display images from generator in nxm grid.'
+    )
+    results_parser.add_argument(
+        '--baseline',
+        action='store_true',
+        help='Generate and display images from each checkpoint in training using same z.'
+    )
+
+    results_parser.set_defaults(func=results)
 
     args = parser.parse_args(sys.argv[1:])
 
