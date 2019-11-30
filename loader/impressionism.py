@@ -10,7 +10,7 @@ if __name__ == 'loader.impressionism':
     from .loader import load_data, format_info
 else:
     import downloader
-    from .loader import load_data, format_info
+    from loader import load_data, format_info
 
 ds = 'impressionism'
 ds_info = {
@@ -39,4 +39,5 @@ def load_np(optimize=True, imsize=64, batch_size=128, verbose=True, nbatches=1):
 
 
 if __name__ == '__main__':
-    load()
+    batch = next(iter(load()))
+    print(batch.shape)

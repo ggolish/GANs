@@ -10,7 +10,7 @@ if __name__ == 'loader.ross':
     from .loader import load_data, format_info
 else:
     import downloader
-    from .loader import load_data, format_info
+    from loader import load_data, format_info
 
 
 ds = 'ross-data-resized'
