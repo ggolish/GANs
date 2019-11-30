@@ -69,8 +69,7 @@ def recover_training_state(name, dest='results'):
     ''' Recover a previous training session '''
 
     # Load checkpoints
-    dest = os.path.join(dest, name)
-    checkpoints = load_checkpoints(dest, name)
+    checkpoints = load_checkpoints(name, dest=dest)
 
     # Bring results up to date
     results = {}
@@ -82,7 +81,7 @@ def recover_training_state(name, dest='results'):
                 results[key].append(c['metrics'][key])
 
     # Load training settings
-    settings_dest = os.path.join(dest, 'settings.json')
+    settings_dest = os.path.join(dest, name, 'settings.json')
     with open(settings_dest, 'r') as fd:
         S = json.load(fd)
 
@@ -120,8 +119,9 @@ def store_results(dest, name, gan, results):
     }, path)
 
 
-def load_checkpoints(dest, name):
+def load_checkpoints(name, dest='results'):
     ''' Loads all checkpoints in a training session '''
+    dest = os.path.join(dest, name)
     prefix = f'{name}-checkpoint'
     paths = [os.path.join(dest, f)
              for f in os.listdir(dest) if f.startswith(prefix)]
@@ -132,10 +132,10 @@ def load_checkpoints(dest, name):
     return sorted(checkpoints, key=lambda c: c['iteration'])
 
 
-def load_results(dest, name):
+def load_results(name, dest='results'):
     ''' Loads the results of a specific training session '''
-    path = os.path.join(dest, f'{name}-results.pt')
+    path = os.path.join(dest, name, f'{name}-results.pt')
     if not os.path.exists(path):
-        sys.sterr.write('Unable to load results for session "{name}".\n')
+        sys.stderr.write(f'Unable to load results for session "{name}".\n')
         return None
     return torch.load(path)
