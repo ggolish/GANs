@@ -13,11 +13,11 @@ else:
     from loader import load_data, format_info
 
 
-ds = 'ross-data-resized'
+ds = 'ross'
 ds_info = {
     'name': f'{ds}',
     'local_dir': f'/u1/h3/adavenport9/public_html/data/{ds}',
-    'data_url': f'http://cs.indstate.edu/~ggolish/data/{ds}.tar.gz',
+    'data_url': f'http://cs.indstate.edu/~adavenport9/data/{ds}.tar.gz',
     'data_dest': f'/tmp/{ds}.tar.gz',
     'final_dir': f'/tmp/{ds}',
     'final_dest': f'/tmp/{ds}.npy'
