@@ -49,6 +49,7 @@ def train(gan, name, dl, settings={}, dest='results', checkpoints=True,
     # Run training session and store results
     curr_iteration = ci
     results = cr
+    print(f'Training {name}...')
     for metrics in gan.train_no_gp(dl, S['iterations'], ci, S['learning_rate'],
                                    S['sample_interval'], S['batch_size']):
         for key in metrics:
