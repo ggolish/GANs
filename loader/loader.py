@@ -22,12 +22,14 @@ class GenericDataset():
     def __init__(self, ds_info: dict):
         self.ds_info = ds_info
         self.len = len([f for f in os.listdir(self.ds_info["final_dest"]) if f.endswith(".npy")])
+        self.files = [f for f in os.listdir(self.ds_info["final_dest"]) if f.endswith(".npy")]
 
     def __len__(self):
         return self.len
 
     def __getitem__(self, i: int):
-        path = os.path.join(self.ds_info["final_dest"], "{}{:05d}.npy".format(self.ds_info["name"], i))
+        # path = os.path.join(self.ds_info["final_dest"], "{}{:05d}.npy".format(self.ds_info["name"], i))
+        path = os.path.join(self.ds_info["final_dest"], self.files[i])
         return np.load(path)
 
    
