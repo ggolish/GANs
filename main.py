@@ -78,6 +78,23 @@ def results(args):
         title = f'{args.name} Baseline Images'
         visualize.images_as_grid(images, guess, guess, name=title)
 
+    # Generate gif
+    if args.gif:
+        checkpoints = trainer.load_checkpoints(args.name)
+        guess = math.floor(math.sqrt(len(checkpoints)))
+        skip = len(checkpoints) - (guess**2)
+        gans = []
+        for checkpoint in checkpoints[skip:]:
+            gan = artgan.GAN(checkpoint['settings'])
+            gan.D.load_state_dict(checkpoint['d_state_dict'])
+            gan.G.load_state_dict(checkpoint['g_state_dict'])
+            gans.append(gan)
+        images = ganutils.generate_static_images(gans, gans[0].S['image_size'])
+        title = f'{args.name} Static Images'
+        print(images.shape)
+        # visualize.images_as_grid(images, guess, guess, name=title)
+
+
 
 def parse_args():
 
@@ -159,6 +176,11 @@ def parse_args():
         '--baseline',
         action='store_true',
         help='Generate and display images from each checkpoint in training using same z.'
+    )
+    results_parser.add_argument(
+        '--gif',
+        action='store_true',
+        help='Generate a gif with a frame from each checkpoint using our static Z.'
     )
 
     results_parser.set_defaults(func=results)
