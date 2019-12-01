@@ -1,9 +1,13 @@
 
 import torch
 import numpy as np
-
+import imageio
 from tqdm import tqdm
 
+if __name__ == 'ganutils.utils':
+    from .staticz import load_static
+else:
+    from staticz import load_static
 
 def generate_images(gan, n):
     ''' Generates n images from GAN gan '''
@@ -29,6 +33,29 @@ def generate_baseline_images(checkpoints):
             img = gan.G(z)[0].numpy()
             imgs.append(img)
     imgs = np.array(imgs)
+    return clean_images(imgs)
+
+
+def generate_static_images(checkpoints, im_size=64, rows=5, cols=5):
+    """ Generating images from the static vectors """
+    # load 25 images for 5 x 5 display
+    z = checkpoints[0].get_latent_vec(1)
+    print(z.shape)
+    sz = load_static(rows*cols)
+    print(sz.shape)
+    with torch.no_grad():
+        imgs = list()
+        print('Generating static images:')
+        for gan in tqdm(checkpoints[:25], ascii=True):
+            frame = list()
+            frame = gan.G(sz).numpy()
+            # Each frame of the gif will be a grid of multiple images
+            frame = frame[:cols*rows].reshape(rows, cols, im_size, im_size, 3).swapaxes(1, 2).reshape(im_size * rows, im_size * cols, 3)
+            imgs.append(frame)
+            imageio.imsave('test.png', frame)
+
+    imgs = np.array(imgs)
+    imageio.mimsave('test.gif', imgs, fps=3)
     return clean_images(imgs)
 
 
