@@ -46,17 +46,20 @@ def generate_static_images(checkpoints, im_size=64, rows=5, cols=5):
     with torch.no_grad():
         imgs = list()
         print('Generating static images:')
-        for gan in tqdm(checkpoints[:25], ascii=True):
+        for gan in tqdm(checkpoints, ascii=True):
             frame = list()
             frame = gan.G(sz).numpy()
+            frame = clean_images(frame)
             # Each frame of the gif will be a grid of multiple images
             frame = frame[:cols*rows].reshape(rows, cols, im_size, im_size, 3).swapaxes(1, 2).reshape(im_size * rows, im_size * cols, 3)
             imgs.append(frame)
-            imageio.imsave('test.png', frame)
 
     imgs = np.array(imgs)
-    imageio.mimsave('test.gif', imgs, fps=3)
-    return clean_images(imgs)
+    print(imgs.shape)
+    imageio.imsave('test.png', imgs[0])
+    imageio.mimsave('fast.gif', imgs, duration=0.1)
+    imageio.mimsave('slow.gif', imgs, duration=0.3)
+    return imgs
 
 
 def clean_images(images):

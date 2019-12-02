@@ -81,10 +81,8 @@ def results(args):
     # Generate gif
     if args.gif:
         checkpoints = trainer.load_checkpoints(args.name)
-        guess = math.floor(math.sqrt(len(checkpoints)))
-        skip = len(checkpoints) - (guess**2)
         gans = []
-        for checkpoint in checkpoints[skip:]:
+        for checkpoint in checkpoints:
             gan = artgan.GAN(checkpoint['settings'])
             gan.D.load_state_dict(checkpoint['d_state_dict'])
             gan.G.load_state_dict(checkpoint['g_state_dict'])
@@ -92,6 +90,9 @@ def results(args):
         images = ganutils.generate_static_images(gans, gans[0].S['image_size'])
         title = f'{args.name} Static Images'
         print(images.shape)
+        import matplotlib.pyplot as plt
+        plt.imshow(images[0])
+
         # visualize.images_as_grid(images, guess, guess, name=title)
 
 
