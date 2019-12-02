@@ -56,9 +56,7 @@ def generate_static_images(checkpoints, im_size=64, rows=5, cols=5):
 
     imgs = np.array(imgs)
     print(imgs.shape)
-    imageio.imsave('test.png', imgs[0])
     imageio.mimsave('fast.gif', imgs, duration=0.1)
-    imageio.mimsave('slow.gif', imgs, duration=0.3)
     return imgs
 
 
