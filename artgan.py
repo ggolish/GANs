@@ -107,6 +107,7 @@ class GAN():
                 d_loss.backward()
                 d_optim.step()
                 d_losses.append(d_loss)
+                # Replaced in gp
                 for p in self.D.parameters():
                     p.data = torch.clamp(p.data, -self.S['clipping_constant'],
                                          self.S['clipping_constant'])
