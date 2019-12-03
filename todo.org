@@ -12,17 +12,17 @@
  - [ ] Parallel training on cubism data set
 
 * Saving
-- [ ] Network saving
-- [ ] Network loading
-- [ ] Save checkpoints
-- [ ] Images
-  - [ ] Save generated images
-  - [ ] Make gif of images
+- [X] Network saving
+- [X] Network loading
+- [X] Save checkpoints
+- [X] Images
+  - [X] Save generated images
+  - [X] Make gif of images
 
 * Image Visualization
 - [X] View raw dataset.
-- [ ] View generated images.
-- [ ] Generate images from constant Z as the network trains
+- [X] View generated images.
+- [X] Generate images from constant Z as the network trains
 - [X] Replace cv2
   
 * Training
