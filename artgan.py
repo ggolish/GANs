@@ -91,9 +91,10 @@ class GAN():
         d_optim = RMSprop(self.D.parameters(), lr=lr)
         g_optim = RMSprop(self.G.parameters(), lr=lr)
 
+        # Iterations of batches
         for iteration in tqdm(range(ci, iterations), ascii=True, initial=ci,
                               total=iterations):
-            # Train the critic
+            # Train the critic the specified number of times before generator
             d_losses = []
             for _ in range(self.S['ncritic']):
                 self.D.zero_grad()

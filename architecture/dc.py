@@ -25,7 +25,7 @@ class CriticArchitecture(Module):
         # This architecure will only be for image sizes that are powers of two
         # (for simplicity)
         if not isbase2(self.imsize):
-            raise Exception(f"Invalid image size for DCGAN: {self.imsize}")
+            raise Exception(f"Invalid image size for DCGAN: {self.imsize}\nMust be a power of two.")
 
         # Construct the necessary number of layers
         self.layers = []
@@ -81,7 +81,7 @@ class GeneratorArchitecture(Module):
         # Ensure image is a power of 2
         if not isbase2(self.imsize):
             raise Exception(
-                f"Invalid image size for DCGAN generator: {self.imsize}")
+                f"Invalid image size for DCGAN generator: {self.imsize}\nMust be a power of 2.")
 
         # Build appropriate number of layers
         self.layers = []
