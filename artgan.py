@@ -31,6 +31,9 @@ DEFAULT_SETTINGS = {
     # WGAN-GP training hyperparams
     'gp_enabled': False,
     'gradient_penalty': 10,
+
+    # MLP hyperparams
+    'layer_size': 512,
 }
 
 # Informatation for argparse
