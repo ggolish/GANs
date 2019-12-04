@@ -69,13 +69,13 @@ class GeneratorArchitecture(Module):
 
         # Store necessary parameters from parent GAN
         self.zdim = settings['zdim']
-        self.nfeatures = settings['nfeatures']
+        # self.nfeatures = settings['nfeatures']
         self.nchannels = settings['nchannels']
         self.imsize = settings['image_size']
         self.debug = debug
         self.layer_size = settings['layer_size']
         # Need to calculate output size
-        self.output_size = (imsize**2) * nchannels
+        self.output_size = (self.imsize**2) * self.nchannels
 
         # Ensure image is a power of 2
         if not isbase2(self.imsize):
@@ -84,7 +84,7 @@ class GeneratorArchitecture(Module):
 
         # Build appropriate number of layers
         self.layers = []
-        self.layers.append(Linear(self.zdim), self.layer_size)
+        self.layers.append(Linear(self.zdim, self.layer_size))
 
         self.layers.append(Linear(self.layer_size, self.output_size))
         self.layers.append(Tanh())
@@ -118,9 +118,10 @@ if __name__ == "__main__":
     g = GeneratorArchitecture({
         'image_size': 32,
         'nchannels': 3,
-        'zdim': 100
+        'zdim': 100,
+        'layer_size': 512
     }, debug=True)
 
     with torch.no_grad():
-        z = torch.randn(128, 100, 1, 1)
-        g(z)
+        z = torch.randn(100, 1, 1)
+        g(z.flatten())
