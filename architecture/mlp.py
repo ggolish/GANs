@@ -20,6 +20,7 @@ class CriticArchitecture(Module):
         self.nchannels = settings['nchannels']
         # self.nfeatures = settings['nfeatures']
         # self.gp_enabled = settings['gp_enabled']
+        self.layer_size = settings['layer_size']
         self.debug = debug
         self.input_size = (imsize**2) * nchannels
 
@@ -31,13 +32,13 @@ class CriticArchitecture(Module):
         # Construct the necessary number of layers
         self.layers = []
         self.layers.append(
-            Linear(self.input_size, 512)
+            Linear(self.input_size, self.layer_size)
         )
         # Going to try leakyrelu activation
         self.layers.append(LeakyReLU(0.02, inplace=True))
 
         self.layers.append(
-            Linear(512,1)
+            Linear(self.layer_size,1)
         )
         self.layers.append(LeakyReLU(0.02, inplace=True))
 
@@ -72,6 +73,7 @@ class GeneratorArchitecture(Module):
         self.nchannels = settings['nchannels']
         self.imsize = settings['image_size']
         self.debug = debug
+        self.layer_size = settings['layer_size']
         # Need to calculate output size
         self.output_size = (imsize**2) * nchannels
 
@@ -82,22 +84,10 @@ class GeneratorArchitecture(Module):
 
         # Build appropriate number of layers
         self.layers = []
-        p = int(math.log2(self.imsize))
-        mult = 2**(p - 2)
-        for i in range(p - 2):
-            s = 1 if i == 0 else 2
-            pad = 0 if i == 0 else 1
-            dim = self.zdim if i == 0 else (self.nfeatures * mult)
-            conv2d = ConvTranspose2d(
-                int(dim), int(self.nfeatures * mult / 2), 4, s, pad, bias=False)
-            bn = BatchNorm2d(int(self.nfeatures * mult / 2))
-            activation = ReLU(True)
-            self.layers.extend([conv2d, bn, activation])
-            mult /= 2
-        conv2d = ConvTranspose2d(
-            int(self.nfeatures * mult), self.nchannels, 4, 2, 1, bias=False)
-        activation = Tanh()
-        self.layers.extend([conv2d, activation])
+        self.layers.append(Linear(self.zdim), self.layer_size)
+
+        self.layers.append(Linear(self.layer_size, self.output_size))
+        self.layers.append(Tanh())
 
         # Ensure parameters are accessible
         for i, layer in enumerate(self.layers):
@@ -126,10 +116,8 @@ def isbase2(x):
 if __name__ == "__main__":
 
     g = GeneratorArchitecture({
-        'gp_enabled': True,
         'image_size': 32,
         'nchannels': 3,
-        'nfeatures': 128,
         'zdim': 100
     }, debug=True)
 
