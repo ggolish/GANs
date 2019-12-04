@@ -36,7 +36,7 @@ def generate_baseline_images(checkpoints):
     return clean_images(imgs)
 
 
-def generate_static_images(checkpoints, im_size=64, rows=5, cols=5):
+def generate_static_images(name:str, checkpoints, im_size=64, rows=5, cols=5):
     """ Generating images from the static vectors """
     # load 25 images for 5 x 5 display
     z = checkpoints[0].get_latent_vec(1)
@@ -56,7 +56,7 @@ def generate_static_images(checkpoints, im_size=64, rows=5, cols=5):
 
     imgs = np.array(imgs)
     print(imgs.shape)
-    imageio.mimsave('fast.gif', imgs, duration=0.1)
+    imageio.mimsave(f'{name}.fast.gif', imgs, duration=0.1)
     return imgs
 
 

@@ -16,9 +16,12 @@ def train(args):
 
     if args.recover:
         ts, cp, res = trainer.recover_training_state(args.name)
-        dl = loader.load_dataset(args.dataset,
-                                 imsize=cp['settings']['image_size'],
-                                 batch_size=ts['batch_size'])
+        dl = loader.load_dataset(
+            args.dataset,
+            imsize=cp['settings']['image_size'],
+            batch_size=ts['batch_size'],
+            optimize=args.optimize
+        )
         gan = artgan.GAN(cp['settings'])
         gan.D.load_state_dict(cp['d_state_dict'])
         gan.G.load_state_dict(cp['g_state_dict'])
@@ -26,8 +29,12 @@ def train(args):
             gan.cuda()
         trainer.train(gan, args.name, dl, ts, ci=cp['iteration'], cr=res)
     else:
-        dl = loader.load_dataset(args.dataset, imsize=args.image_size,
-                                 batch_size=args.batch_size)
+        dl = loader.load_dataset(
+            args.dataset,
+            imsize=args.image_size,
+            batch_size=args.batch_size,
+            optimize=args.optimize
+        )
 
         gansettings = {}
         for key in artgan.DEFAULT_SETTINGS:
@@ -87,12 +94,8 @@ def results(args):
             gan.D.load_state_dict(checkpoint['d_state_dict'])
             gan.G.load_state_dict(checkpoint['g_state_dict'])
             gans.append(gan)
-        images = ganutils.generate_static_images(gans, gans[0].S['image_size'])
+        images = ganutils.generate_static_images(args.name, gans, gans[0].S['image_size'])
         title = f'{args.name} Static Images'
-        print(images.shape)
-        import matplotlib.pyplot as plt
-        plt.imshow(images[0])
-
         # visualize.images_as_grid(images, guess, guess, name=title)
 
 
@@ -113,6 +116,13 @@ def parse_args():
         type=str,
         choices=['ross', 'cifar', 'cubism', 'impressionism'],
         help='Dataset used during training.'
+    )
+    train_parser.add_argument(
+        '-o',
+        '--optimize',
+        default=False,
+        action='store_true',
+        help='Use dataset optimizations.'
     )
     train_parser.add_argument(
         'name',
