@@ -4,7 +4,12 @@
  - [ ] Gotta add those type hints
 
 * Architecture
- - [ ] Implment archituctures for MLPGAN, DCGAN, and ResNetGAN
+ - [ ] Implment architucturesfor MLPGAN, DCGAN, and ResNetGAN
+   - [ ] MLPGAN
+     Critic - no activation function on output, relu(maybe leaky) inside critic
+
+   - [ ] DCGAN
+   - [ ] WGAN_GP
  - [ ] Run training on each type of architecture for comparison
 
 * Parallelization
@@ -48,3 +53,5 @@
  
 * Get Gage to Use Doom
 - [ ] DOOM
+* Explore the latent space
+- [ ] Move around the latent space

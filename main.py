@@ -7,6 +7,7 @@ import artgan
 import loader
 import ganutils
 import math
+import imageio
 
 from ganutils import trainer, visualize
 
@@ -94,10 +95,9 @@ def results(args):
             gan.D.load_state_dict(checkpoint['d_state_dict'])
             gan.G.load_state_dict(checkpoint['g_state_dict'])
             gans.append(gan)
-        images = ganutils.generate_static_images(args.name, gans, gans[0].S['image_size'])
-        title = f'{args.name} Static Images'
-        # visualize.images_as_grid(images, guess, guess, name=title)
-
+        images = ganutils.generate_static_images(gans, gans[0].S['image_size'])
+        title = f'{args.name}-static-images.gif'
+        imageio.mimsave(title, images, duration=0.1)
 
 
 def parse_args():

@@ -9,6 +9,7 @@ if __name__ == 'ganutils.utils':
 else:
     from staticz import load_static
 
+
 def generate_images(gan, n):
     ''' Generates n images from GAN gan '''
     gan.cpu()
@@ -40,9 +41,7 @@ def generate_static_images(name:str, checkpoints, im_size=64, rows=5, cols=5):
     """ Generating images from the static vectors """
     # load 25 images for 5 x 5 display
     z = checkpoints[0].get_latent_vec(1)
-    print(z.shape)
     sz = load_static(rows*cols)
-    print(sz.shape)
     with torch.no_grad():
         imgs = list()
         print('Generating static images:')
@@ -51,7 +50,9 @@ def generate_static_images(name:str, checkpoints, im_size=64, rows=5, cols=5):
             frame = gan.G(sz).numpy()
             frame = clean_images(frame)
             # Each frame of the gif will be a grid of multiple images
-            frame = frame[:cols*rows].reshape(rows, cols, im_size, im_size, 3).swapaxes(1, 2).reshape(im_size * rows, im_size * cols, 3)
+            frame = frame[:cols*rows].reshape(rows, cols, im_size, im_size, 3)
+            frame = frame.swapaxes(1, 2)
+            frame = frame.reshape(im_size * rows, im_size * cols, 3)
             imgs.append(frame)
 
     imgs = np.array(imgs)
