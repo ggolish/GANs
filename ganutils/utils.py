@@ -23,42 +23,21 @@ def generate_images(gan, n):
         return clean_images(images)
 
 
-def generate_baseline_images(checkpoints):
-    ''' Generates an image from the same latent vector from each checkpoint in
-        training session '''
-    with torch.no_grad():
-        z = checkpoints[0].get_latent_vec(1)
-        imgs = []
-        print('Generating baseline images:')
-        for gan in tqdm(checkpoints, ascii=True):
-            img = gan.G(z)[0].numpy()
-            imgs.append(img)
-    imgs = np.array(imgs)
-    return clean_images(imgs)
-
-
-def generate_static_images(name:str, checkpoints, im_size=64, rows=5, cols=5):
+def generate_static_images(gan, rows=5, cols=5):
     """ Generating images from the static vectors """
     # load 25 images for 5 x 5 display
-    z = checkpoints[0].get_latent_vec(1)
+    im_size = gan.S['image_size']
     sz = load_static(rows*cols)
     with torch.no_grad():
-        imgs = list()
-        print('Generating static images:')
-        for gan in tqdm(checkpoints, ascii=True):
-            frame = list()
-            frame = gan.G(sz).numpy()
-            frame = clean_images(frame)
-            # Each frame of the gif will be a grid of multiple images
-            frame = frame[:cols*rows].reshape(rows, cols, im_size, im_size, 3)
-            frame = frame.swapaxes(1, 2)
-            frame = frame.reshape(im_size * rows, im_size * cols, 3)
-            imgs.append(frame)
+        frame = list()
+        frame = gan.G(sz).numpy()
+        frame = clean_images(frame)
+        # Each frame of the gif will be a grid of multiple images
+        frame = frame[:cols*rows].reshape(rows, cols, im_size, im_size, 3)
+        frame = frame.swapaxes(1, 2)
+        frame = frame.reshape(im_size * rows, im_size * cols, 3)
 
-    imgs = np.array(imgs)
-    print(imgs.shape)
-    imageio.mimsave(f'{name}.fast.gif', imgs, duration=0.1)
-    return imgs
+    return frame
 
 
 def clean_images(images):
