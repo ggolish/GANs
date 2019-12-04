@@ -75,16 +75,12 @@ def results(args):
     if args.gif:
         images = []
         for checkpoint in trainer.load_checkpoints(args.name):
-            start = perf_counter()
             gan = artgan.GAN(checkpoint['settings'])
             gan.D.load_state_dict(checkpoint['d_state_dict'])
             gan.G.load_state_dict(checkpoint['g_state_dict'])
-            end = perf_counter()
-            print('Gan loading: {}'.format(end - start))
-            start = perf_counter()
+            if args.cuda:
+                gan.cuda()
             images.append(ganutils.generate_static_images(gan))
-            end = perf_counter()
-            print('Image generating: {}'.format(end - start))
         title = f'{args.name}-static-images.gif'
         imageio.mimsave(title, images, duration=0.1)
 
@@ -176,6 +172,11 @@ def parse_args():
         '--gif',
         action='store_true',
         help='Generate a gif with a frame from each checkpoint using our static Z.'
+    )
+    results_parser.add_argument(
+        '--cuda',
+        action='store_true',
+        help='Move gan to gpu before inference.'
     )
 
     results_parser.set_defaults(func=results)

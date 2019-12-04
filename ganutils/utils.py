@@ -27,7 +27,7 @@ def generate_static_images(gan, rows=5, cols=5):
     """ Generating images from the static vectors """
     # load 25 images for 5 x 5 display
     im_size = gan.S['image_size']
-    sz = load_static(rows*cols)
+    sz = load_static(rows*cols).to(gan.dev)
     with torch.no_grad():
         frame = list()
         frame = gan.G(sz).numpy()
