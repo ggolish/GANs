@@ -30,7 +30,7 @@ def generate_static_images(gan, rows=5, cols=5):
     sz = load_static(rows*cols).to(gan.dev)
     with torch.no_grad():
         frame = list()
-        frame = gan.G(sz).numpy()
+        frame = gan.G(sz).cpu().numpy()
         frame = clean_images(frame)
         # Each frame of the gif will be a grid of multiple images
         frame = frame[:cols*rows].reshape(rows, cols, im_size, im_size, 3)
