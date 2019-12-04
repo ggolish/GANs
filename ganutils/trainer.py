@@ -126,11 +126,12 @@ def load_checkpoints(name, dest='results'):
     prefix = f'{name}-checkpoint'
     paths = [os.path.join(dest, f)
              for f in os.listdir(dest) if f.startswith(prefix)]
+    paths.sort(key=lambda p: int(p.split('-')[-1].split('.')[0]))
     print('Loading checkpoints:')
     dev = torch.device('cpu')
-    checkpoints = [torch.load(p, map_location=dev)
-                   for p in tqdm(paths, ascii=True)]
-    return sorted(checkpoints, key=lambda c: c['iteration'])
+    for path in tqdm(paths, ascii=True):
+        checkpoint = torch.load(path, map_location=dev)
+        yield checkpoint
 
 
 def load_results(name, dest='results'):

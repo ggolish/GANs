@@ -71,31 +71,14 @@ def results(args):
         images = ganutils.generate_images(gan, r * c)
         visualize.images_as_grid(images, r, c, name=title)
 
-    # Generate baseline images
-    if args.baseline:
-        checkpoints = trainer.load_checkpoints(args.name)
-        guess = math.floor(math.sqrt(len(checkpoints)))
-        skip = len(checkpoints) - (guess**2)
-        gans = []
-        for checkpoint in checkpoints[skip:]:
-            gan = artgan.GAN(checkpoint['settings'])
-            gan.D.load_state_dict(checkpoint['d_state_dict'])
-            gan.G.load_state_dict(checkpoint['g_state_dict'])
-            gans.append(gan)
-        images = ganutils.generate_baseline_images(gans)
-        title = f'{args.name} Baseline Images'
-        visualize.images_as_grid(images, guess, guess, name=title)
-
     # Generate gif
     if args.gif:
-        checkpoints = trainer.load_checkpoints(args.name)
-        gans = []
-        for checkpoint in checkpoints:
+        images = []
+        for checkpoint in trainer.load_checkpoints(args.name):
             gan = artgan.GAN(checkpoint['settings'])
             gan.D.load_state_dict(checkpoint['d_state_dict'])
             gan.G.load_state_dict(checkpoint['g_state_dict'])
-            gans.append(gan)
-        images = ganutils.generate_static_images(gans, gans[0].S['image_size'])
+            images.append(ganutils.generate_static_images(gan))
         title = f'{args.name}-static-images.gif'
         imageio.mimsave(title, images, duration=0.1)
 
@@ -182,11 +165,6 @@ def parse_args():
         type=int,
         nargs=2,
         help='Generate and display images from generator in nxm grid.'
-    )
-    results_parser.add_argument(
-        '--baseline',
-        action='store_true',
-        help='Generate and display images from each checkpoint in training using same z.'
     )
     results_parser.add_argument(
         '--gif',
