@@ -83,7 +83,7 @@ def results(args):
             print('Gan loading: {}'.format(end - start))
             start = perf_counter()
             images.append(ganutils.generate_static_images(gan))
-            end = perf_counter(
+            end = perf_counter()
             print('Image generating: {}'.format(end - start))
         title = f'{args.name}-static-images.gif'
         imageio.mimsave(title, images, duration=0.1)
