@@ -47,7 +47,8 @@ INFO = {
     'clipping_constant': [float, 'Clipping constant for Wasserstein distance.'],
     'ncritic': [int, 'Number of times to train critic before generator.'],
     'gp_enabled': [bool, 'Whether or not to use gradient penalty.'],
-    'gradient_penalty': [float, 'Gradient penalty constant for WGAN-GP.']
+    'gradient_penalty': [float, 'Gradient penalty constant for WGAN-GP.'],
+    'layer_size': [int, 'Layer size for mlp.'],
 }
 
 
