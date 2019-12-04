@@ -6,10 +6,10 @@ import argparse
 import artgan
 import loader
 import ganutils
-import math
 import imageio
 
 from ganutils import trainer, visualize
+from time import perf_counter
 
 
 def train(args):
@@ -75,10 +75,16 @@ def results(args):
     if args.gif:
         images = []
         for checkpoint in trainer.load_checkpoints(args.name):
+            start = perf_counter()
             gan = artgan.GAN(checkpoint['settings'])
             gan.D.load_state_dict(checkpoint['d_state_dict'])
             gan.G.load_state_dict(checkpoint['g_state_dict'])
+            end = perf_counter()
+            print('Gan loading: {}'.format(end - start))
+            start = perf_counter()
             images.append(ganutils.generate_static_images(gan))
+            end = perf_counter(
+            print('Image generating: {}'.format(end - start))
         title = f'{args.name}-static-images.gif'
         imageio.mimsave(title, images, duration=0.1)
 
