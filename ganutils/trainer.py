@@ -9,6 +9,9 @@ import json
 
 from tqdm import tqdm
 
+# Need to get the absolute path for results
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # Default training parameters
 DEFAULT_SETTINGS = {
     'iterations': 1000,
@@ -139,7 +142,7 @@ def load_checkpoints(name, dest='results', verbose=True):
 
 def load_results(name, dest='results'):
     ''' Loads the results of a specific training session '''
-    path = os.path.join(dest, name, f'{name}-results.pt')
+    path = os.path.join(BASE_DIR, dest, name, f'{name}-results.pt')
     if not os.path.exists(path):
         raise Exception(f'{name} not yet complete, unable to load results!')
     return torch.load(path)
