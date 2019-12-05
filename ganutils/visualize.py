@@ -10,13 +10,10 @@ from tqdm import tqdm
 
 if __name__ == 'ganutils.visualize':
     from .utils import clean_images
+    from . import trainer
 else:
     from utils import clean_images
-
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-import trainer
-import artgan
-
+    import trainer
 
 
 def plot_losses(d_losses: list, g_losses: list, name='GAN Losses'):
@@ -94,6 +91,9 @@ def explore_dimensions(gan, rows=4, cols=4):
     return images
 
 if __name__ == '__main__':
+
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+    import artgan
 
     results = trainer.load_results('ross-wgan-1')
 

@@ -31,6 +31,8 @@ DEFAULT_SETTINGS = {
     # WGAN-GP training hyperparams
     'gp_enabled': False,
     'gradient_penalty': 10,
+    'adam_beta1': 0.0,
+    'adam_beta2': 0.99,
 
     # MLP hyperparams
     'layer_size': 512,
@@ -48,6 +50,8 @@ INFO = {
     'ncritic': [int, 'Number of times to train critic before generator.'],
     'gp_enabled': [bool, 'Whether or not to use gradient penalty.'],
     'gradient_penalty': [float, 'Gradient penalty constant for WGAN-GP.'],
+    'adam_beta1': [float, 'The first beta parameter for Adam'],
+    'adam_beta2': [float, 'The second beta parameter for Adam'],
     'layer_size': [int, 'Layer size for mlp.']
 }
 
@@ -76,18 +80,73 @@ class GAN():
     def __repr__(self):
         return f'GAN(\n{repr(self.D)}\n{repr(self.G)}\n)'
 
-    def train(self, dl, iterations=1000, lr=0.0002, si=20, bs=128):
+    def train(self, dl, iterations=1000, ci=0, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data '''
         if self.S['gp_enabled']:
-            for metrics in self.train_gp(dl, iterations, lr, si, bs):
+            for metrics in self.train_gp(dl, iterations, ci, lr, si, bs):
                 yield metrics
         else:
-            for metrics in self.train_no_gp(dl, iterations, lr, si, bs):
+            for metrics in self.train_no_gp(dl, iterations, ci, lr, si, bs):
                 yield metrics
 
-    def train_gp(self, dl, iterations=1000, lr=0.0002, si=20, bs=128):
+    def train_gp(self, dl, iterations=1000, ci=0, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data using wasserstein with gp'''
-        pass
+        betas = (self.S['adam_beta1'], self.S['adam_beta2'])
+        d_optim = Adam(self.D.parameters(), lr=lr, betas=betas)
+        g_optim = Adam(self.G.parameters(), lr=lr, betas=betas)
+
+        for iteration in tqdm(range(ci, iterations), ascii=True, initial=ci,
+                              total=iterations):
+
+            # Train the critic with gradient penalty
+            for _ in range(self.S['ncritic']):
+                x_batch = next(iter(dl)).to(self.dev)
+                z_batch = self.get_latent_vec(bs).to(self.dev)
+                losses = []
+                for x_real, z in zip(x_batch, z_batch):
+
+                    self.D.zero_grad()
+                    
+                    # Generate a fake image
+                    x_real = x_real.unsqueeze(0)
+                    z = z.unsqueeze(0)
+                    x_fake = self.G(z).detach()
+                    
+                    # Calculate the interpolated image
+                    sigma = torch.rand(1)
+                    x_int = sigma * x_real + (1 - sigma) * x_fake
+                    
+                    # Run each image through the critic
+                    d_real = self.D(x_real)
+                    d_fake = self.D(x_fake)
+                    d_int = self.D(x_int)
+
+                    # Calculate the gradient penalty
+                    gradients = torch.autograd.grad(d_int, self.D.parameters(), create_graph=True)
+                    gnorm = 0
+                    for g in gradients:
+                        gnorm += g.view(g.shape[0], -1).pow(2).sum()
+                    gnorm = gnorm.sqrt()
+                    penalty = self.S['gradient_penalty'] * (gnorm - 1)**2
+
+                    # Calculate loss
+                    loss = d_fake - d_real + penalty
+                    losses.append(loss.sum().view(1, -1))
+
+                # Apply loss
+                self.D.zero_grad()
+                final_loss = torch.mean(torch.cat(losses))
+                final_loss.backward()
+                d_optim.step()
+
+            # Train the generator
+            self.G.zero_grad()
+            z_batch = self.get_latent_vec(bs).to(self.dev)
+            g_out = self.G(z_batch)
+            d_fake = self.D(g_out)
+            g_loss = -torch.mean(d_fake)
+            g_loss.backward()
+            g_optim.step()
 
     def train_no_gp(self, dl, iterations=1000, ci=0, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data using vanilla wasserstein'''
