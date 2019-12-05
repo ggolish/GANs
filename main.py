@@ -52,7 +52,14 @@ def train(args):
 
 
 def results(args):
-    results = trainer.load_results(args.name)
+
+    trainer.summary(args.name)
+
+    try:
+        results = trainer.load_results(args.name)
+    except Exception as e:
+        print(e)
+        return
 
     gan = artgan.GAN(results['settings'])
     gan.D.load_state_dict(results['d_state_dict'])

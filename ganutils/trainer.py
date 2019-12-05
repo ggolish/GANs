@@ -120,16 +120,19 @@ def store_results(dest, name, gan, results):
     }, path)
 
 
-def load_checkpoints(name, dest='results'):
+def load_checkpoints(name, dest='results', verbose=True):
     ''' Loads all checkpoints in a training session '''
     dest = os.path.join(dest, name)
     prefix = f'{name}-checkpoint'
     paths = [os.path.join(dest, f)
              for f in os.listdir(dest) if f.startswith(prefix)]
+    if len(paths) == 0:
+        raise Exception(f'Unable to load checkpoints for {name}!')
     paths.sort(key=lambda p: int(p.split('-')[-1].split('.')[0]))
-    print('Loading checkpoints:')
+    if verbose:
+        print('Loading checkpoints:')
     dev = torch.device('cpu')
-    for path in tqdm(paths, ascii=True):
+    for path in tqdm(paths, ascii=True, disable=(not verbose)):
         checkpoint = torch.load(path, map_location=dev)
         yield checkpoint
 
@@ -138,6 +141,30 @@ def load_results(name, dest='results'):
     ''' Loads the results of a specific training session '''
     path = os.path.join(dest, name, f'{name}-results.pt')
     if not os.path.exists(path):
-        sys.stderr.write(f'Unable to load results for session "{name}".\n')
-        return None
+        raise Exception(f'{name} not yet complete, unable to load results!')
     return torch.load(path)
+
+
+def summary(name, dest='results'):
+    ''' Prints a summary of the training settings for a session '''
+    path = os.path.join(dest, name, 'settings.json')
+    with open(path, 'r') as fd:
+        settings = json.load(fd)
+
+    print('###', name, '###')
+    for key, value in settings.items():
+        print('- {:20s} {}'.format(key, value))
+
+    try:
+        res = load_results(name, dest=dest)
+        for key, value in res['settings'].items():
+            print('- {:20s} {}'.format(key, value))
+    except Exception:
+        try:
+            checkpoint = next(iter(
+                load_checkpoints(name, dest=dest, verbose=False)
+            ))
+            for key, value in checkpoint['settings'].items():
+                print('- {:20s} {}'.format(key, value))
+        except Exception:
+            print('Training session not started.')
