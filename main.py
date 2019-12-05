@@ -9,7 +9,6 @@ import ganutils
 import imageio
 
 from ganutils import trainer, visualize
-from time import perf_counter
 
 
 def train(args):
