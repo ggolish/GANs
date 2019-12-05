@@ -58,7 +58,7 @@ def images_as_grid(images, rows, cols, name='grid', save=False):
 
        
 def get_direction():
-    sample_size = random.randint(50,100)
+    sample_size = random.randint(1,100)
     return random.sample(range(100), sample_size)
 
 
@@ -68,7 +68,7 @@ def explore_dimensions(gan, rows=4, cols=4):
         sys.stderr('Error trying to visualize too many dimensions.')
         exit()
     im_size = gan.S['image_size']
-    z = torch.zeros(rows*cols,100, 1, 1).to(gan.dev) + 0.1
+    z = torch.zeros(rows*cols,100, 1, 1).to(gan.dev) + 0.001
     # Save our frames in a list
     images = list()
     directions = [get_direction() for x in range(rows*cols)]
@@ -90,7 +90,7 @@ def explore_dimensions(gan, rows=4, cols=4):
                 imageio.imsave('1.png', frame)
         for i in range(rows*cols):
             for d in directions[i]:
-                z[i,d] += 0.01
+                z[i,d] += 0.001
     return images
 
 if __name__ == '__main__':
