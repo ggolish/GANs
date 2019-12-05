@@ -53,7 +53,7 @@ def train(gan, name, dl, settings={}, dest='results', checkpoints=True,
     curr_iteration = ci
     results = cr
     print(f'Training {name}...')
-    for metrics in gan.train_no_gp(dl, S['iterations'], ci, S['learning_rate'],
+    for metrics in gan.train(dl, S['iterations'], ci, S['learning_rate'],
                                    S['sample_interval'], S['batch_size']):
         for key in metrics:
             if key not in results:
