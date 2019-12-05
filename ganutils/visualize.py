@@ -62,19 +62,24 @@ def get_direction():
     return random.sample(range(100), sample_size)
 
 
-def explore_dimensions(gan, rows=4, cols=4):
+def explore_dimensions(gan, path, rand_start=True, rows=4, cols=4, mult=0.002):
     """ Exploring the latent space """
+    print(f'Generating image: {path}')
     if rows * cols > 100:
         sys.stderr('Error trying to visualize too many dimensions.')
         exit()
     im_size = gan.S['image_size']
-    z = torch.zeros(rows*cols,100, 1, 1).to(gan.dev) + 0.001
+    if rand_start:
+        z = torch.ones(rows*cols,100, 1, 1).to(gan.dev) * torch.randn(100,1,1).to(gan.dev)
+    else:
+        z = torch.zeros(rows*cols,100, 1, 1).to(gan.dev) + 0.01
+
+    rz = torch.randn(rows*cols,100, 1, 1).to(gan.dev) * mult
     # Save our frames in a list
     images = list()
     directions = [get_direction() for x in range(rows*cols)]
-    mult = 2
 
-    for i in tqdm(range(100)):
+    for i in range(50):
         with torch.no_grad():
             frame = list()
             frame = gan.G(z).cpu().numpy()
@@ -89,16 +94,34 @@ def explore_dimensions(gan, rows=4, cols=4):
             if i == 1:
                 imageio.imsave('1.png', frame)
         for i in range(rows*cols):
-            for d in directions[i]:
-                z[i,d] += 0.001
-    return images
+            z += rz * mult
+    imageio.mimsave(path, images, duration=0.1)
 
-if __name__ == '__main__':
+def explore(name: str, rand_start=False, rows=5, cols=5, num=16):
+    import threading
+    out_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'results',
+        'exploration'
+        )
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
+    print(out_dir)
 
-    results = trainer.load_results('ross-wgan-1')
-
+    results = trainer.load_results(name)
     gan = artgan.GAN(results['settings'])
     gan.D.load_state_dict(results['d_state_dict'])
     gan.G.load_state_dict(results['g_state_dict'])
     gan.cuda()
-    imageio.mimsave('test.gif', explore_dimensions(gan, rows=10, cols=10), duration=0.1)
+    threads = list()
+    for i in range(num):
+        path = os.path.join(out_dir, f'{i:02d}.gif')
+        thread = threading.Thread(target=explore_dimensions, args=(gan, path, rand_start, rows, cols))
+        threads.append(thread)
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+if __name__ == '__main__':
+    explore('ross-wgan-1', rand_start=False)
+    # imageio.mimsave('test.gif', explore_dimensions(gan, rows=10, cols=10), duration=0.1)
