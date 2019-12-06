@@ -7,6 +7,7 @@ import torch
 import os
 import random
 from tqdm import tqdm
+from datetime import datetime
 
 if __name__ == 'ganutils.visualize':
     from .utils import clean_images
@@ -104,12 +105,7 @@ def explore(name: str, rand_start=False, rows=5, cols=5, num=16):
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
     print(out_dir)
-
-    results = trainer.load_results(name)
-    gan = artgan.GAN(results['settings'])
-    gan.D.load_state_dict(results['d_state_dict'])
-    gan.G.load_state_dict(results['g_state_dict'])
-    gan.cuda()
+    gan = load_gan()
     threads = list()
     for i in range(num):
         path = os.path.join(out_dir, f'{i:02d}.gif')
@@ -118,6 +114,32 @@ def explore(name: str, rand_start=False, rows=5, cols=5, num=16):
         thread.start()
     for thread in threads:
         thread.join()
+
+def generate_image(name: str, z):
+    gan = load_gan(name)
+    ts = datetime.now()
+    path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'images',
+        f'{ts}.png'
+        )
+    image = gan.G(z).cpu().numpy()
+    image = clean_images(image)
+    imageio.imsave(path, image)
+    return
+
+
+
+
+def load_gan(name: str):
+    """ I'll probably move this somewhere else in the future """
+    results = trainer.load_results(name)
+    gan = artgan.GAN(results['settings'])
+    gan.D.load_state_dict(results['d_state_dict'])
+    gan.G.load_state_dict(results['g_state_dict'])
+    gan.cuda()
+    return results['settings'], gan
+
 
 if __name__ == '__main__':
     explore('ross-wgan-1', rand_start=False)
