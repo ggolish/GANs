@@ -109,7 +109,7 @@ class GAN():
                 x_batch_fake = self.G(z_batch).detach()
 
                 # Calculate the interpolated image
-                sigma = torch.rand(bs, 1, 1, 1)
+                sigma = torch.rand(bs, 1, 1, 1).to(self.dev)
                 sigma.expand_as(x_batch_real)
                 x_int = sigma * x_batch_real + ((1 - sigma) * x_batch_fake)
                 x_int.requires_grad = True

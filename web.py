@@ -6,6 +6,7 @@ import os
 import sys
 import torch
 from ganutils import visualize
+import artgan
 
 app = Flask(__name__)
 
@@ -18,8 +19,6 @@ def home():
     if not os.path.exists(path):
         # todo- Need to do an actual 404
         return '404 - session not found'
-
-
 
     return content['name']
 
