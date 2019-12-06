@@ -99,45 +99,40 @@ class GAN():
                               total=iterations):
 
             # Train the critic with gradient penalty
+            d_losses = []
             for _ in range(self.S['ncritic']):
-                x_batch = next(iter(dl)).to(self.dev)
-                z_batch = self.get_latent_vec(bs).to(self.dev)
-                losses = []
-                for x_real, z in zip(x_batch, z_batch):
-
-                    self.D.zero_grad()
-                    
-                    # Generate a fake image
-                    x_real = x_real.unsqueeze(0)
-                    z = z.unsqueeze(0)
-                    x_fake = self.G(z).detach()
-                    
-                    # Calculate the interpolated image
-                    sigma = torch.rand(1)
-                    x_int = sigma * x_real + (1 - sigma) * x_fake
-                    
-                    # Run each image through the critic
-                    d_real = self.D(x_real)
-                    d_fake = self.D(x_fake)
-                    d_int = self.D(x_int)
-
-                    # Calculate the gradient penalty
-                    gradients = torch.autograd.grad(d_int, self.D.parameters(), create_graph=True)
-                    gnorm = 0
-                    for g in gradients:
-                        gnorm += g.view(g.shape[0], -1).pow(2).sum()
-                    gnorm = gnorm.sqrt()
-                    penalty = self.S['gradient_penalty'] * (gnorm - 1)**2
-
-                    # Calculate loss
-                    loss = d_fake - d_real + penalty
-                    losses.append(loss.sum().view(1, -1))
-
-                # Apply loss
                 self.D.zero_grad()
-                final_loss = torch.mean(torch.cat(losses))
-                final_loss.backward()
+                x_batch_real = next(iter(dl)).to(self.dev)
+                z_batch = self.get_latent_vec(bs).to(self.dev)
+
+                # Generate a fake image
+                x_batch_fake = self.G(z_batch).detach()
+
+                # Calculate the interpolated image
+                sigma = torch.rand(bs, 1, 1, 1)
+                sigma.expand_as(x_batch_real)
+                x_int = sigma * x_batch_real + ((1 - sigma) * x_batch_fake)
+                x_int.requires_grad = True
+
+                # Run each image through the critic
+                d_real = self.D(x_batch_real)
+                d_fake = self.D(x_batch_fake)
+                d_int = self.D(x_int)
+
+                # Calculate the gradient penalty
+                jacobian_vector = torch.ones(d_int.shape).to(self.dev)
+                gradients = torch.autograd.grad(d_int, x_int,
+                                                grad_outputs=jacobian_vector,
+                                                create_graph=True)[0]
+                gradients = gradients.view(gradients.shape[0], -1)
+                gnorm = gradients.pow(2).sum(dim=1).sqrt()
+                penalty = self.S['gradient_penalty'] * ((gnorm - 1)**2)
+
+                # Calculate and apply loss
+                d_loss = d_fake.mean() - d_real.mean() + penalty.mean()
+                d_loss.backward()
                 d_optim.step()
+                d_losses.append(d_loss)
 
             # Train the generator
             self.G.zero_grad()
@@ -147,6 +142,12 @@ class GAN():
             g_loss = -torch.mean(d_fake)
             g_loss.backward()
             g_optim.step()
+
+            # Yield results each sample inteval
+            if iteration % si == 0:
+                d_avg_loss = np.mean([l.cpu().item() for l in d_losses])
+                g_loss_cpu = g_loss.cpu().item()
+                yield {'d_loss': d_avg_loss, 'g_loss': g_loss_cpu}
 
     def train_no_gp(self, dl, iterations=1000, ci=0, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data using vanilla wasserstein'''

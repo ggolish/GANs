@@ -54,7 +54,7 @@ def train(gan, name, dl, settings={}, dest='results', checkpoints=True,
     results = cr
     print(f'Training {name}...')
     for metrics in gan.train(dl, S['iterations'], ci, S['learning_rate'],
-                                   S['sample_interval'], S['batch_size']):
+                             S['sample_interval'], S['batch_size']):
         for key in metrics:
             if key not in results:
                 results[key] = [metrics[key]]
@@ -171,3 +171,8 @@ def summary(name, dest='results'):
                 print('- {:20s} {}'.format(key, value))
         except Exception:
             print('Training session not started.')
+
+
+def get_sessions(dest='results'):
+    ''' Returns the names of the available training sessions '''
+    return os.listdir(dest)
