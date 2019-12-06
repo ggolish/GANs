@@ -99,6 +99,7 @@ class GAN():
                               total=iterations):
 
             # Train the critic with gradient penalty
+            d_losses = []
             for _ in range(self.S['ncritic']):
                 x_batch = next(iter(dl)).to(self.dev)
                 z_batch = self.get_latent_vec(bs).to(self.dev)
@@ -138,6 +139,7 @@ class GAN():
                 final_loss = torch.mean(torch.cat(losses))
                 final_loss.backward()
                 d_optim.step()
+                d_losses.append(final_loss)
 
             # Train the generator
             self.G.zero_grad()
@@ -147,6 +149,12 @@ class GAN():
             g_loss = -torch.mean(d_fake)
             g_loss.backward()
             g_optim.step()
+
+            # Yield results each sample inteval
+            if iteration % si == 0:
+                d_avg_loss = np.mean([l.cpu().item() for l in d_losses])
+                g_loss_cpu = g_loss.cpu().item()
+                yield {'d_loss': d_avg_loss, 'g_loss': g_loss_cpu}
 
     def train_no_gp(self, dl, iterations=1000, ci=0, lr=0.0002, si=20, bs=128):
         ''' Trains the GAN on the given data using vanilla wasserstein'''
