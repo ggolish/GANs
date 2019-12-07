@@ -9,6 +9,9 @@ import random
 from tqdm import tqdm
 from datetime import datetime
 
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import artgan
+
 if __name__ == 'ganutils.visualize':
     from .utils import clean_images
     from . import trainer
@@ -116,17 +119,19 @@ def explore(name: str, rand_start=False, rows=5, cols=5, num=16):
         thread.join()
 
 def generate_image(name: str, z):
-    gan = load_gan(name)
-    ts = datetime.now()
-    path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        'images',
-        f'{ts}.png'
-        )
-    image = gan.G(z).cpu().numpy()
-    image = clean_images(image)
-    imageio.imsave(path, image)
-    return
+    with torch.no_grad():
+        settings, gan = load_gan(name)
+        z = z.to(gan.dev)
+        ts = datetime.now()
+        path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            'images',
+            f'{ts}.png'
+            )
+        image = gan.G(z).cpu().numpy()
+        image = clean_images(image)
+        # imageio.imsave(path, image)
+        return image
 
 
 
@@ -142,5 +147,7 @@ def load_gan(name: str):
 
 
 if __name__ == '__main__':
-    explore('ross-wgan-1', rand_start=False)
+    # explore('ross-wgan-1', rand_start=False)
     # imageio.mimsave('test.gif', explore_dimensions(gan, rows=10, cols=10), duration=0.1)
+    plt.imshow(generate_image('ross-wgan-1', torch.randn(1, 100,1,1))[0])
+    plt.show()

@@ -36,7 +36,7 @@ async function loadTrainingSession(name) {
     const url = baseUrl + '/load-session';
     setStatus('Loading results of session ' + name);
     resp = await loadResource(url, {name: name});
-    setStatus(resp.status);
+    setStatus(resp.status + resp.image);
 }
 
 

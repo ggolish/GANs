@@ -6,6 +6,7 @@ from flask import Flask, request
 from flask_cors import CORS
 
 from ganutils import trainer
+from ganutils import visualize
 
 app = Flask(__name__, static_folder='frontend')
 CORS(app)
@@ -34,8 +35,10 @@ def load_session():
             data = request.get_json()
             if data['name'] not in results:
                 results[data['name']] = trainer.load_results(data['name'])
-                print(results)
+                # print(results)
             response['status'] = 'success'
+            import torch
+            response['image'] = str(list(visualize.generate_image(data['name'], torch.randn(100,1,1))))
         except Exception as e:
             response['status'] = repr(e)
     else:
