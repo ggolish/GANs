@@ -38,7 +38,7 @@ def load_session():
                 # print(results)
             response['status'] = 'success'
             import torch
-            response['image'] = str(list(visualize.generate_image(data['name'], torch.randn(100,1,1))))
+            response['image'] = str(list(visualize.generate_image(data['name'], torch.randn(1,100,1,1))))
         except Exception as e:
             response['status'] = repr(e)
     else:
