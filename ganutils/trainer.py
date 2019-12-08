@@ -88,8 +88,9 @@ def recover_training_state(name, dest='results'):
     settings_dest = os.path.join(dest, name, 'settings.json')
     with open(settings_dest, 'r') as fd:
         S = json.load(fd)
-
-    return (S, checkpoints[-1], results)
+    # Need to return the last checkpoint
+    # With the change to using a generator we can no longer use indexes
+    return (S, c, results)
 
 
 def is_training_started(name, dest='results'):
