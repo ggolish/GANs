@@ -141,6 +141,22 @@ def load_checkpoints(name, dest='results', verbose=True):
         yield checkpoint
 
 
+def move_checkpoints(name, dest='results', device='cpu', verbose=True):
+    ''' Move all checkpoints to specified device, cpu by default '''
+    print('Moving checkpoints:')
+    dest = os.path.join(dest, name)
+    prefix = f'{name}-checkpoint'
+    paths = [os.path.join(dest, f)
+             for f in os.listdir(dest) if f.startswith(prefix)]
+    if len(paths) == 0:
+        raise Exception(f'Unable to load checkpoints for {name}!')
+    paths.sort(key=lambda p: int(p.split('-')[-1].split('.')[0]))
+    dev = torch.device('cpu')
+    for path in tqdm(paths, ascii=True, disable=(not verbose)):
+        checkpoint = torch.load(path, map_location=dev)
+        yield path, checkpoint
+
+
 def load_results(name, dest='results'):
     ''' Loads the results of a specific training session '''
     path = os.path.join(BASE_DIR, dest, name, f'{name}-results.pt')

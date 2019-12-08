@@ -7,6 +7,7 @@ import artgan
 import loader
 import ganutils
 import imageio
+import torch
 
 from ganutils import trainer, visualize
 
@@ -89,6 +90,21 @@ def results(args):
             images.append(ganutils.generate_static_images(gan))
         title = f'{args.name}-static-images.gif'
         imageio.mimsave(title, images, duration=0.1)
+
+    # Move gan to cpu
+    if args.move:
+        print('moving')
+        for path, checkpoint in trainer.move_checkpoints(args.name):
+            gan = artgan.GAN(checkpoint['settings'])
+            gan.D.load_state_dict(checkpoint['d_state_dict'])
+            gan.G.load_state_dict(checkpoint['g_state_dict'])
+            gan.cpu()
+            torch.save({
+                'results': results['results'],
+                'settings': gan.S,
+                'd_state_dict': gan.D.state_dict(),
+                'g_state_dict': gan.G.state_dict()
+            }, path)
 
 
 def parse_args():
@@ -178,6 +194,11 @@ def parse_args():
         '--gif',
         action='store_true',
         help='Generate a gif with a frame from each checkpoint using our static Z.'
+    )
+    results_parser.add_argument(
+        '--move',
+        action='store_true',
+        help='Move results to a different device.'
     )
     results_parser.add_argument(
         '--cuda',
