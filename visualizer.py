@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+""" GAN visualizer using tkinter """
+
 from tkinter import *
 import argparse
 import numpy as np
@@ -10,7 +12,7 @@ from PIL import Image, ImageTk
 from ganutils import trainer
 
 def selection(event):
-    """ Right now this should just make every image the same as the one you click """
+    """ Select an image you like and then move it randomly in the latent space """
     global z
     global canvas
     global canvas_image
@@ -31,6 +33,7 @@ def selection(event):
     canvas.itemconfig(canvas_image, image=img)
 
 def refresh(event):
+    """ Refresh all images with new random z """
     global z
     global canvas
     global canvas_image
