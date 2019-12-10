@@ -9,6 +9,7 @@ from PIL import Image, ImageTk
 from ganutils import trainer
 
 def selection(event):
+    """ Right now this should just make every image the same as the one you click """
     global z
     global canvas
     global canvas_image
@@ -40,8 +41,8 @@ def selection(event):
    
 if __name__ == '__main__':
     name = 'ross-2'
-    rows = 1
-    cols = 2
+    rows = 10
+    cols = 10
     try:
         results = trainer.load_results(name)
         gan = artgan.GAN(results['settings'])
