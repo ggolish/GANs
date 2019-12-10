@@ -13,6 +13,9 @@ CORS(app)
 
 results = {}
 
+images = list()
+z = list()
+
 
 @app.route('/')
 def root():
@@ -28,7 +31,9 @@ def get_sessions():
 
 @app.route('/load-session', methods=['POST'])
 def load_session():
+    global images
     global results
+    global z
     response = {}
     if request.method == 'POST':
         try:
@@ -38,7 +43,34 @@ def load_session():
                 # print(results)
             response['status'] = 'success'
             import torch
-            response['image'] = str(list(visualize.generate_image(data['name'], torch.randn(1,100,1,1))))
+            z = torch.randn(100,100,1,1)
+            images = str(list(visualize.generate_image(data['name'], z)))
+            response['images'] = images
+        except Exception as e:
+            response['status'] = repr(e)
+    else:
+        response['status'] = f'invalid method {request.method}'
+
+    return json.dumps(response)
+
+
+@app.route('/pickz', methods=['POST'])
+def pick_z():
+    global images
+    global results
+    global z
+    response = {}
+    if request.method == 'POST':
+        try:
+            data = request.get_json()
+            if data['name'] not in results:
+                results[data['name']] = trainer.load_results(data['name'])
+                # print(results)
+            response['status'] = 'success'
+            import torch
+            z = torch.randn(100,100,1,1)
+            images = str(list(visualize.generate_image(data['name'], z)))
+            response['images'] = images
         except Exception as e:
             response['status'] = repr(e)
     else:
