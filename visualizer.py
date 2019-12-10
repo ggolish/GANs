@@ -59,7 +59,7 @@ def refresh(event):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('GAN Visualizer')
     parser.add_argument(
-        'session',
+        'name',
         type=str,
         help='Completed training session to use for visualization.'
     )
@@ -80,8 +80,9 @@ if __name__ == '__main__':
         help='Number of columns to display.'
     )
 
-   
-    name = 'ross-2'
+    args = parser.parse_args()
+    name = args.name
+    # name = 'ross-2'
     rows = 10
     cols = 10
     try:
@@ -89,7 +90,7 @@ if __name__ == '__main__':
         gan = artgan.GAN(results['settings'])
         gan.D.load_state_dict(results['d_state_dict'])
         gan.G.load_state_dict(results['g_state_dict'])
-        # gan.cuda()
+        gan.cuda()
     except Exception as e:
         print(e)
     with torch.no_grad():
