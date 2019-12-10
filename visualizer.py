@@ -16,17 +16,10 @@ def selection(event):
     global canvas_image
     global images
     global img
-    indx = (event.y // 64) * 10 + event.x // 64
-    # Store our selected z
-    selz = z[indx].reshape(1,100,1,1)
-    z = selz
-    print(indx, selz.shape)
-
-    # z = torch.cat(100*[selz]).reshape(100,100,1,1)
-    # z = torch.ones(100,100,1,1).to(gan.dev) * z[indx]
-    # z = z[0].reshape(100,1,1)
-    # z = torch.zeros(rows*cols, 100, 1, 1).to(gan.dev) + selz
-    z = z.repeat(rows*cols, 1, 1, 1)
+    indx = (event.y // 64) * cols + event.x // 64
+    selz = z[indx].reshape(100,1,1)
+    z = torch.ones(rows*cols,100, 1, 1).to(gan.dev) * selz
+    z = z + (torch.randn(rows*cols,100,1,1).to(gan.dev) * 0.25)
     print(indx, z[0,0])
     # z = z.repeat(100,1,1,1)
     # z = torch.randn(100,100,1,1).to(gan.dev)
@@ -65,7 +58,7 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        '-r'
+        '-r',
         '--rows',
         type=int,
         default=5,
@@ -73,7 +66,7 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        '-c'
+        '-c',
         '--cols',
         type=int,
         default=5,
@@ -82,9 +75,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     name = args.name
-    # name = 'ross-2'
-    rows = 10
-    cols = 10
+    rows = args.rows
+    cols = args.cols
     try:
         results = trainer.load_results(name)
         gan = artgan.GAN(results['settings'])
