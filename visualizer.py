@@ -17,12 +17,10 @@ def selection(event):
     global images
     global img
     indx = (event.y // 64) * cols + event.x // 64
-    selz = z[indx].reshape(100,1,1)
+    selz = z[indx].reshape(1,100,1,1)
     z = torch.ones(rows*cols,100, 1, 1).to(gan.dev) * selz
     z = z + (torch.randn(rows*cols,100,1,1).to(gan.dev) * 0.25)
     print(indx, z[0,0])
-    # z = z.repeat(100,1,1,1)
-    # z = torch.randn(100,100,1,1).to(gan.dev)
     with torch.no_grad():
         images = gan.G(z).cpu().numpy()
         images = clean_images(images)
