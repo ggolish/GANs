@@ -73,6 +73,11 @@ if __name__ == '__main__':
         default=5,
         help='Number of columns to display.'
     )
+    parser.add_argument(
+        '--cpu',
+        action='store_true',
+        help='Force run on cpu'
+    )
 
     args = parser.parse_args()
     name = args.name
@@ -83,7 +88,8 @@ if __name__ == '__main__':
         gan = artgan.GAN(results['settings'])
         gan.D.load_state_dict(results['d_state_dict'])
         gan.G.load_state_dict(results['g_state_dict'])
-        gan.cuda()
+        if not args.cpu:
+            gan.cuda()
     except Exception as e:
         print(e)
     with torch.no_grad():
