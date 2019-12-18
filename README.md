@@ -18,7 +18,7 @@ via a GIF, such as the ones below. They show the generator's output
 for the same latent vectors at regular intervals during the training
 session.
 
-![](http://cs.indstate.edu/~ggolish/data/figures/ross-2-static-images.gif)
-![](http://cs.indstate.edu/~ggolish/data/figures/impressionism-1-static-images.gif)
-![](http://cs.indstate.edu/~ggolish/data/figures/cubism-wgan-1-static-images.gif)
+![ross-2-static-images](figures/ross-2-static-images.gif)
+![impressionism-1-static-images](figures/impressionism-1-static-images.gif)
+![cubism-wgan-1-static-images](figures/cubism-wgan-1-static-images.gif)
 
