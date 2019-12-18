@@ -9,9 +9,7 @@ exploratory research project during the fall of 2019 with Adam Davenport.
 The main program is `gans.py`, and has two subcommands. Run `python3
 gans.py train -h` and `python3 gans.py results -h` to see the possible
 options. Below is an example of running a training session:
-```./gans.py train --image-size 64 --nfeatures 32 --learning-rate
-0.0001 --batch-size 64 --iteration 50000 --sample-interval 200
---gp-enabled true ross ross-3```
+```./gans.py train --image-size 64 --nfeatures 32 --learning-rate 0.0001 --batch-size 64 --iteration 50000 --sample-interval 200 --gp-enabled true ross ross-3```
 
 ## Visualizing Results
 
