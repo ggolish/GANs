@@ -214,6 +214,12 @@ class GAN():
         self.D.to(self.dev)
         self.G.to(self.dev)
 
+def gan_from_checkpoint(checkpoint):
+    gan = GAN(checkpoint['settings'])
+    gan.D.load_state_dict(checkpoint['d_state_dict'])
+    gan.G.load_state_dict(checkpoint['g_state_dict'])
+    return gan
+
 
 if __name__ == "__main__":
 

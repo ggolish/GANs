@@ -59,45 +59,46 @@ def results(args):
     try:
         results = trainer.load_results(args.name)
     except Exception as e:
-        print(e)
-        return
-
-    gan = artgan.GAN(results['settings'])
-    gan.D.load_state_dict(results['d_state_dict'])
-    gan.G.load_state_dict(results['g_state_dict'])
+        results = None
 
     # Plot losses
     if args.losses:
-        d_losses, g_losses = results['results'].values()
-        visualize.plot_losses(d_losses, g_losses)
+        if not results:
+            sys.stderr.write("Error: Can not plot losses, session incomplete.\n")
+        else:
+            d_losses, g_losses = results['results'].values()
+            visualize.plot_losses(d_losses, g_losses)
 
     # Generate and display images
     if args.generate:
-        r, c = args.generate
-        title = f'{args.name} Generated Images'
-        images = ganutils.generate_images(gan, r * c)
-        visualize.images_as_grid(images, r, c, name=title)
+        if not results:
+            sys.stderr.write("Error: Unable to generate images, session incomplete.\n")
+        else:
+            r, c = args.generate
+            gan = artgan.gan_from_checkpoint(results)
+            title = f'{args.name} Generated Images'
+            images = ganutils.generate_images(gan, r * c)
+            visualize.images_as_grid(images, r, c, name=title)
 
     # Generate gif
     if args.gif:
         images = []
         for checkpoint in trainer.load_checkpoints(args.name):
-            gan = artgan.GAN(checkpoint['settings'])
-            gan.D.load_state_dict(checkpoint['d_state_dict'])
-            gan.G.load_state_dict(checkpoint['g_state_dict'])
+            gan = artgan.gan_from_checkpoint(checkpoint)
             if args.cuda:
                 gan.cuda()
             images.append(ganutils.generate_static_images(gan))
-        title = f'{args.name}-static-images.gif'
-        imageio.mimsave(title, images, duration=0.1)
+        if len(images) == 0:
+            sys.stderr.write("Error: Unable to load checkpoints.\n")
+        else:
+            title = f'{args.name}-static-images.gif'
+            imageio.mimsave(title, images, duration=0.1)
 
     # Move gan to cpu
     if args.move:
         print('moving')
         for path, checkpoint in trainer.move_checkpoints(args.name):
-            gan = artgan.GAN(checkpoint['settings'])
-            gan.D.load_state_dict(checkpoint['d_state_dict'])
-            gan.G.load_state_dict(checkpoint['g_state_dict'])
+            gan = artgan.gan_from_checkpoint(checkpoint)
             gan.cpu()
             torch.save({
                 'results': results['results'],
